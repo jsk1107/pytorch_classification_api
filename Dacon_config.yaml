@@ -1,0 +1,25 @@
+# Global config
+project_name: 'Dacon_cls'
+cuda: True
+gpu_ids: 0
+tensorboard: True
+
+# DataLoader config
+root_dir: './data/dacon_cls/'
+label_map_path: './dataloader/dataset/labelmap/dacon_cls.name'
+num_workers: 8
+pin_memory: True
+batch_size: 64
+resize: [28, 28]
+start_epoch: 0
+epoch: 100
+
+# Model config
+model: 'resnet-50'
+# [ inception-v3, vgg-16, resnet-18, resnet-50, resnet-101, resnet-152, darknet19, efficientnet-b0,
+# efficientnet-b1, efficientnet-b2, efficientnet-b3, efficientnet-b4, efficientnet-b5 ]
+lr: 0.0001
+step_size: 2
+gamma: 0.9
+resume: False # Path checkpoint
+
