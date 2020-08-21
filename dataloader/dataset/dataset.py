@@ -91,7 +91,6 @@ class DaconDataloader(Dataset):
             return {'img': img, 'letter': letter_value, 'target': target}
         return {'img': img, 'letter': letter_value}
 
-
 if __name__ == '__main__':
     """Unit Test"""
     from dataloader import get_dataloader
