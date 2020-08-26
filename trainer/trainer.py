@@ -8,6 +8,7 @@ from log.logger import get_logger
 from dataloader import get_dataloader
 from model.metric import MetricTracker, accuracy
 from tqdm import tqdm
+from dataloader.utils import label_map
 
 
 class Trainer(object):
@@ -22,13 +23,16 @@ class Trainer(object):
             self.tensorboardsummary = TensorboardSummary(self.saver.expriment_dir)
             self.writer = self.tensorboardsummary.create_summary()
 
-
         # Define Logger
         self.logger = get_logger(self.config, self.saver.expriment_dir)
 
         # Define DataLoader
-        self.train_loader, self.val_loader, self.label_map = get_dataloader(self.config)
-
+        # self.train_loader, self.val_loader, self.label_map = get_dataloader(self.config)
+        self.label_map = label_map(self.config.label_map_path)
+        # 임시?? Letter Map
+        self.LETTER_DICT = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7, 'I': 8, 'J': 9, 'K': 10, 'L': 11,
+                   'M': 12, 'N': 13, 'O': 14, 'P': 15, 'Q': 16, 'R': 17, 'S': 18, 'T': 19, 'U': 20, 'V': 21,
+                   'W': 22, 'X': 23, 'Y': 24, 'Z': 25}
         # Define Network(Resnet50)
         self.model = resnet.ResNet(resnet.Bottleneck, [3, 4, 6, 3], 10)
 
@@ -68,78 +72,80 @@ class Trainer(object):
     def train(self, epoch):
         self.model.train()
         train_loss = .0
-        train_len = self.train_loader.__len__()
 
-        with tqdm(self.train_loader) as tbar:
-            for i, sample in enumerate(tbar):
-                img = sample['img']
-                target = sample['target']
+        for k in self.LETTER_DICT.keys():
+            print(k)
+            self.train_loader, _, _ = get_dataloader(self.config, k)
+            train_len = self.train_loader.__len__()
+            with tqdm(self.train_loader) as tbar:
+                for i, sample in enumerate(tbar):
+                    img = sample['img']
+                    target = sample['target']
 
-                if self.config.cuda:
-                    img, target = img.cuda(), target.cuda()
-                self.optimizer.zero_grad()
-                output = self.model(img)
-
-                loss = self.criterion(output, target)
-                loss.backward()
-                self.optimizer.step()
-
-                train_loss += loss.item()
-
-                tbar.set_description(f'EPOCH : {epoch} | Train loss : {train_loss / (i + 1):.3f}')
-                self.writer.add_scalar('train/total_loss_iter', loss.item(), i + epoch * train_len)
-                self.tensorboardsummary.visualize_image(self.writer, img[0], target[0], output[0], i)
-        self.writer.add_scalar('train/total_loss_epoch', train_loss, epoch)
-
-    def validation(self, epoch):
-        self.model.eval()
-        self.metric.reset()
-        val_loss = .0
-        val_len = self.val_loader.__len__()
-
-        with tqdm(self.val_loader) as tbar:
-            for i, sample in enumerate(tbar):
-                img = sample['img']
-                target = sample['target']
-
-                if self.config.cuda:
-                    img, target = img.cuda(), target.cuda()
-
-                with torch.no_grad():
+                    if self.config.cuda:
+                        img, target = img.cuda(), target.cuda()
+                    self.optimizer.zero_grad()
                     output = self.model(img)
-                loss = self.criterion(output, target)
-                val_loss += loss.item()
-                tbar.set_description(f'Validation loss : {val_loss / (i + 1):.3f}')
-                self.writer.add_scalar('validation/val_loss_iter', loss.item(), i + epoch * val_len)
 
-                self.metric.update(target, output)
-            self.logger.info(f'Cunfusion Metric : Row is True, Col is Pred. \n {self.metric.result()}')
+                    loss = self.criterion(output, target)
+                    loss.backward()
+                    self.optimizer.step()
 
-        ACC_PER_CATEGORY, mAP, mAR, TOTAL_F1_SCORE, TOTAL_ACC = self.metric.accuracy()
+                    train_loss += loss.item()
 
-        # save validation_log
-        for i in range(len(self.label_map)):
-            class_name = list(self.label_map.keys())[i]
+                    tbar.set_description(f'EPOCH : {epoch} | Train loss : {train_loss / (i + 1):.3f}')
+                    self.writer.add_scalar('train/total_loss_iter', loss.item(), i + epoch * train_len)
+                    self.tensorboardsummary.visualize_image(self.writer, img[0], target[0], output[0], i)
+            self.writer.add_scalar('train/total_loss_epoch', train_loss, epoch)
 
-            if ACC_PER_CATEGORY.get(class_name) is None:
-                continue
+            self.model.eval()
+            self.metric.reset()
+            val_loss = .0
+            val_len = self.train_loader.__len__()
 
-            self.logger.info(f'Epoch : {epoch} | '
-                             f'AR, AP, ACC of {class_name} : '
-                             f'{100 * ACC_PER_CATEGORY[class_name]["AR"]:.3f} % '
-                             f'{100 * ACC_PER_CATEGORY[class_name]["AP"]:.3f} % '
-                             f'{100 * ACC_PER_CATEGORY[class_name]["ACC"]:.3f} % ')
-        self.logger.info(f'TOTAL_ACC : {100 * TOTAL_ACC:.3f} %')
-        print(f'=============> Accuracy : {TOTAL_ACC}')
-        # save checkpoint of best_model
-        if TOTAL_ACC > self.best_pred:
-            is_best = True
+            with tqdm(self.train_loader) as tbar:
+                for i, sample in enumerate(tbar):
+                    img = sample['img']
+                    target = sample['target']
+
+                    if self.config.cuda:
+                        img, target = img.cuda(), target.cuda()
+
+                    with torch.no_grad():
+                        output = self.model(img)
+                    loss = self.criterion(output, target)
+                    val_loss += loss.item()
+                    tbar.set_description(f'Validation loss : {val_loss / (i + 1):.3f}')
+                    self.writer.add_scalar('validation/val_loss_iter', loss.item(), i + epoch * val_len)
+
+                    self.metric.update(target, output)
+                self.logger.info(f'Cunfusion Metric : Row is True, Col is Pred. \n {self.metric.result()}')
+
+            ACC_PER_CATEGORY, mAP, mAR, TOTAL_F1_SCORE, TOTAL_ACC = self.metric.accuracy()
+
+            # save validation_log
+            for i in range(len(self.label_map)):
+                class_name = list(self.label_map.keys())[i]
+
+                if ACC_PER_CATEGORY.get(class_name) is None:
+                    continue
+
+                self.logger.info(f'Epoch : {epoch} | '
+                                 f'AR, AP, ACC of {class_name} : '
+                                 f'{100 * ACC_PER_CATEGORY[class_name]["AR"]:.3f} % '
+                                 f'{100 * ACC_PER_CATEGORY[class_name]["AP"]:.3f} % '
+                                 f'{100 * ACC_PER_CATEGORY[class_name]["ACC"]:.3f} % ')
+            self.logger.info(f'TOTAL_ACC : {100 * TOTAL_ACC:.3f} %')
+            print(f'=============> Accuracy : {TOTAL_ACC}')
+            # save checkpoint of best_model
+            # if TOTAL_ACC > self.best_pred:
+            is_best = False
             self.best_pred = TOTAL_ACC
             state = {'best_pred': TOTAL_ACC,
                      'epoch': epoch + 1,
                      'state_dict': self.model.state_dict(),
                      'optimizer': self.optimizer.state_dict()}
-            self.saver.save_checkpoint(state, is_best)
+            self.saver.save_checkpoint(state, is_best, k)
 
 
 if __name__ == '__main__':

@@ -47,15 +47,19 @@ class ClassificationLoader(Dataset):
 
 class DaconDataloader(Dataset):
 
-    def __init__(self, root_dir, label_map_path, split='train', transforms=None):
+    def __init__(self, root_dir, label_map_path, letter, split='train', transforms=None):
         self.root_dir = root_dir
         self.split = split
         self.transforms = transforms
-        self.csv_dataset = pd.read_csv(os.path.join(self.root_dir, self.split + '.csv'))
+
+        self.letter_name = [f.name for f in os.scandir(self.root_dir)]
+        self.csv_dataset = pd.read_csv(os.path.join(self.root_dir, letter + '.csv'))
         self.LETTER_DICT = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7, 'I': 8, 'J': 9, 'K': 10, 'L': 11,
                    'M': 12, 'N': 13, 'O': 14, 'P': 15, 'Q': 16, 'R': 17, 'S': 18, 'T': 19, 'U': 20, 'V': 21,
                    'W': 22, 'X': 23, 'Y': 24, 'Z': 25}
+        self.kv_swich_LETTER_DICT = {y: x for x, y in self.LETTER_DICT.items()}
         self.classes = label_map(label_map_path)
+        # self.letter_pd = self.group_letter()
 
     def __getitem__(self, idx):
 
@@ -84,12 +88,22 @@ class DaconDataloader(Dataset):
 
         letter = self.csv_dataset.loc[idx, 'letter']
         fc_img = self.csv_dataset.loc[idx, '0':]
-        img = np.array(fc_img).reshape(28, 28)
+        img = np.array(fc_img).reshape(28, 28).astype(np.uint8)
+        img = cv2.inRange(img, 161, 255)
         letter_value = self.LETTER_DICT[letter]
         if self.split == 'train':
             target = self.csv_dataset.loc[idx, 'digit']
             return {'img': img, 'letter': letter_value, 'target': target}
         return {'img': img, 'letter': letter_value}
+
+    # def group_letter(self):
+    #     letter_pd = {}
+    #     for i in range(len(self.LETTER_DICT)):
+    #         letter = self.kv_swich_LETTER_DICT[i]
+    #         group = self.csv_dataset.loc[self.csv_dataset['letter'] == letter, :]
+    #         letter_pd[letter] = group
+    #     return letter_pd
+
 
 if __name__ == '__main__':
     """Unit Test"""
@@ -99,26 +113,27 @@ if __name__ == '__main__':
     import numpy as np
 
     parser = argparse.ArgumentParser('Unit Test')
-    parser.add_argument('--root_dir', type=str, default='/home/jsk/data/cifar/',
+    parser.add_argument('--project-name', type=str, default='Dacon_cls')
+    parser.add_argument('--root_dir', type=str, default='../../data/dacon_cls/',
                         help='root_dir')
-    parser.add_argument('--label_map_path', type=str, default='/home/jsk/workspace/classification_api/dataloader/dataset/labelmap/cifar10.name',
+    parser.add_argument('--label_map_path', type=str, default='../../dataloader/dataset/labelmap/cifar10.name',
                         help='label_map_path')
     parser.add_argument('--batch_size', type=int, default=2,
                         help='batch_size')
-    parser.add_argument('--resize', type=int, default=[100, 100],
+    parser.add_argument('--resize', type=int, default=[28, 28],
                         help='Image Resize')
+    parser.add_argument('--pin-memory', default=True)
+    parser.add_argument('--num-workers', type=int, default=0)
     args = parser.parse_args()
     print(args)
 
-    train_loader, test_loader = get_dataloader(args, args.root_dir)
+    train_loader, test_loader, _ = get_dataloader(args)
     for i, sample in enumerate(train_loader):
-        img = sample['image']
+        img = sample['img']
         target = sample['target']
         tmp_img = img[0].numpy()
-        tmp_img = np.transpose(tmp_img, axes=[1,2,0])
-        tmp_img = tmp_img.astype(np.uint8)
-        plt.figure()
-        plt.imshow(tmp_img)
-        plt.show()
+        tmp_img = tmp_img.transpose(1, 2, 0).astype(np.uint8)
+        cv2.imshow('img', tmp_img)
+        cv2.waitKey(0)
         break;
 

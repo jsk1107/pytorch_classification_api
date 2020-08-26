@@ -6,7 +6,7 @@ import cv2
 
 
 def transforms_train(config):
-    composed_transform = Compose([Normalize(),
+    composed_transform = Compose([
                                   Resize([config.resize[0], config.resize[1]]),
                                   ToTensor()])
     return composed_transform

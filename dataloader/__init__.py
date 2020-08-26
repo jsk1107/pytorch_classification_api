@@ -4,7 +4,7 @@ from dataloader.custom_transform import transforms_train, transforms_test
 from torch.utils.data import DataLoader, SubsetRandomSampler
 
 
-def get_dataloader(config):
+def get_dataloader(config, letter=None):
 
     if config.project_name == 'cifar10':
         train_dataset = dataset.ClassificationLoader(config.root_dir,
@@ -32,7 +32,7 @@ def get_dataloader(config):
         return train_loader, test_loader, label_map
 
     elif config.project_name == 'Dacon_cls':
-        train_dataset = dataset.DaconDataloader(config.root_dir, config.label_map_path, split='train', transforms=transforms_train(config))
+        train_dataset = dataset.DaconDataloader(config.root_dir, config.label_map_path, letter, split='train', transforms=transforms_train(config))
         label_map = train_dataset.classes
 
         train_cnt = train_dataset.__len__()
