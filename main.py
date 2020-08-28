@@ -16,7 +16,6 @@ def main():
     print('Total Epoch: {}'.format(config.epoch))
     for epoch in range(config.start_epoch, config.epoch):
         trainer.train(epoch)
-        # if epoch % 5 == 0:
         trainer.validation(epoch)
     trainer.writer.close()
 

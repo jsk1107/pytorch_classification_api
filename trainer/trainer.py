@@ -86,7 +86,7 @@ class Trainer(object):
                         img, target = img.cuda(), target.cuda()
                     self.optimizer.zero_grad()
                     output = self.model(img)
-
+                    idx = torch.argmax(output, dim=1)
                     loss = self.criterion(output, target)
                     loss.backward()
                     self.optimizer.step()
