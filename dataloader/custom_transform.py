@@ -6,15 +6,14 @@ import cv2
 
 
 def transforms_train(config):
-    composed_transform = Compose([Normalize(),
-                                  Resize([config.resize[0], config.resize[1]]),
+    composed_transform = Compose([Resize(config.resize),
                                   ToTensor()])
     return composed_transform
 
 
 def transforms_test(config):
-    composed_transform = Compose([Normalize(),
-                                  Resize([config.resize[0], config.resize[1]]),
+    composed_transform = Compose([Resize(config.resize),
+                                  Normalize(),
                                   ToTensor()])
     return composed_transform
 
@@ -52,15 +51,15 @@ class Normalize(object):
 
 
 class Resize(object):
-    def __init__(self, size: List[int]):
-        self.width = size[0]
-        self.height = size[1]
+    def __init__(self, size):
+        self.width = int(size[0])
+        self.height = int(size[1])
 
     def __call__(self, sample):
         img = sample['img']
         target = sample['target']
         letter = sample['letter']
-        img = cv2.resize(img, dsize=(self.width, self.height), interpolation=Image.BILINEAR)
+        img = cv2.resize(img, dsize=(self.width, self.height), interpolation=cv2.INTER_AREA)
         sample = {'img': img, 'letter': letter, 'target': target}
 
         return sample

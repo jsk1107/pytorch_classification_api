@@ -56,6 +56,7 @@ class Trainer(object):
             self.model = torch.nn.DataParallel(self.model, device_ids=[self.config.gpu_ids])
         else:
             print('==> Cuda is not available. CPU Only')
+            self.model = torch.nn.DataParallel(self.model)
 
         # Define resume
         self.best_pred = .0
@@ -141,10 +142,12 @@ class Trainer(object):
             # if TOTAL_ACC > self.best_pred:
             is_best = False
             self.best_pred = TOTAL_ACC
-            state = {'best_pred': TOTAL_ACC,
-                     'epoch': epoch + 1,
-                     'state_dict': self.model.state_dict(),
-                     'optimizer': self.optimizer.state_dict()}
+            state = self.model.module
+            # state = {'best_pred': TOTAL_ACC,
+            #          'epoch': epoch + 1,
+            #          'state_dict': self.model.state_dict(),
+            #          'module': self.model.modules(),
+            #          'optimizer': self.optimizer.state_dict()}
             self.saver.save_checkpoint(state, is_best, k)
 
 

@@ -7,7 +7,7 @@ import pandas as pd
 ### 파일 불러오기
 
 test_path = './data/dacon_cls/test.csv'
-submission = './data/datcon_cls/submission.csv'
+submission = './data/dacon_cls/submission.csv'
 model_path = './run/Dacon_cls/resnet-50/'
 
 test_dataset = pd.read_csv(test_path)
@@ -21,15 +21,20 @@ switch_kv_LETTER_DICT = {v: k for k, v in LETTER_DICT.items()}
 for k in range(len(LETTER_DICT)):
     letter_pd = test_dataset.loc[test_dataset['letter'] == switch_kv_LETTER_DICT[k], :]
     letter_pd = letter_pd.reset_index(inplace=False)
-    model = torch.load('모델경로')
+    model = torch.load(os.path.join(model_path, '20200830_5', str(switch_kv_LETTER_DICT[k]), 'checkpoint.pth.tar'))
+
     for j in range(len(letter_pd)):
         id = letter_pd.loc[j, 'id']
         img = letter_pd.loc[j, '0':]
         img = np.array(img).reshape(28, 28).astype(np.uint8)
         digit_img = cv2.inRange(img, 161, 255)
+        digit_img = torch.from_numpy(digit_img).type(torch.FloatTensor)
+        digit_img = digit_img.unsqueeze(0)
+        digit_img = digit_img.unsqueeze(0)
         output = model(digit_img)
-        pred_digit = torch.argmax(output, dim=1)
+        pred_digit = torch.argmax(output, dim=1).cpu().data.numpy()
+        submission_dataset.loc[submission_dataset['id'] == id, 'digit'] = pred_digit
 
-        submission_dataset[submission_dataset.loc['id'] == id, 'digit'] = pred_digit
+
 
 

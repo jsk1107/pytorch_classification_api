@@ -5,3 +5,6 @@ def label_map(file_path):
         for i, line in enumerate(lines):
             classes[line] = i
     return classes
+
+
+# def dacon_preprocess():

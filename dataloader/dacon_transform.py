@@ -7,14 +7,14 @@ import cv2
 
 def transforms_train(config):
     composed_transform = Compose([
-                                  Resize([config.resize[0], config.resize[1]]),
+                                  Resize(config.resize),
                                   ToTensor()])
     return composed_transform
 
 
 def transforms_test(config):
     composed_transform = Compose([Normalize(),
-                                  Resize([config.resize[0], config.resize[1]]),
+                                  Resize(config.resize),
                                   ToTensor()])
     return composed_transform
 
