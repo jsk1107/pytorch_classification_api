@@ -28,9 +28,7 @@ class Saver(object):
         filename = os.path.join(self.expriment_dir, k, filename)
         if not os.path.exists(os.path.join(self.expriment_dir, k)):
             os.makedirs(os.path.join(self.expriment_dir, k))
-        print(1)
         torch.save(state, filename)
-        print(2)
         if is_best:
             best_pred = state['best_pred']
             with open(os.path.join(self.expriment_dir, 'best_pred.txt'), 'w', encoding='utf-8') as t:
