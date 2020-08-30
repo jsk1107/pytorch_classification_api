@@ -27,7 +27,7 @@ class Trainer(object):
         self.logger = get_logger(self.config, self.saver.expriment_dir)
 
         # Define DataLoader
-        # self.train_loader, self.val_loader, self.label_map = get_dataloader(self.config)
+        self.train_loader, self.val_loader, self.label_map = get_dataloader(self.config)
         self.label_map = label_map(self.config.label_map_path)
         # 임시?? Letter Map
         self.LETTER_DICT = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7, 'I': 8, 'J': 9, 'K': 10, 'L': 11,
@@ -70,12 +70,12 @@ class Trainer(object):
             self.best_pred = checkpoint['best_pred']
             print(f'loaded checkpoint {self.config.resume} epoch {checkpoint["epoch"]}')
 
-    def train(self, epoch, train_loader, k):
+    def train(self, epoch):
         self.model.train()
         train_loss = .0
 
-        train_len = train_loader.__len__()
-        with tqdm(train_loader) as tbar:
+        train_len = self.train_loader.__len__()
+        with tqdm(self.train_loader) as tbar:
             for i, sample in enumerate(tbar):
                 img = sample['img']
                 target = sample['target']
@@ -84,7 +84,6 @@ class Trainer(object):
                     img, target = img.cuda(), target.cuda()
                 self.optimizer.zero_grad()
                 output = self.model(img)
-                idx = torch.argmax(output, dim=1)
                 loss = self.criterion(output, target)
                 loss.backward()
                 self.optimizer.step()
@@ -99,9 +98,9 @@ class Trainer(object):
         # self.model.eval()
         self.metric.reset()
         val_loss = .0
-        val_len = train_loader.__len__()
+        val_len = self.train_loader.__len__()
 
-        with tqdm(train_loader) as tbar:
+        with tqdm(self.train_loader) as tbar:
             for i, sample in enumerate(tbar):
                 img = sample['img']
                 target = sample['target']
@@ -145,7 +144,7 @@ class Trainer(object):
         #          'state_dict': self.model.state_dict(),
         #          'module': self.model.modules(),
         #          'optimizer': self.optimizer.state_dict()}
-        self.saver.save_checkpoint(state, is_best, k)
+        self.saver.save_checkpoint(state, is_best)
 
 
 if __name__ == '__main__':

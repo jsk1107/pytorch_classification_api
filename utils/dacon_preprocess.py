@@ -29,8 +29,8 @@ if __name__ == '__main__':
         letter_pd = train_set.loc[train_set['letter'] == switch_kv_LETTER_DICT[i], :]
         letter_pd.to_csv('../data/dacon_cls/' + str(switch_kv_LETTER_DICT[i]) + '.csv', sep=',', index=False)
 
-    digit_save_dir = os.path.join('/home/jsk/data/dacon_cls/', 'digit')
-    letter_save_dir = os.path.join('/home/jsk/data/dacon_cls/', 'letter')
+    digit_save_dir = os.path.join('D:\\data\\mnist_dacon', 'digit')
+    letter_save_dir = os.path.join('D:\\data\\mnist_dacon', 'letter')
 
     for i in range(len(train_set)):
         img = np.array(imgs.loc[i, :]).reshape(28, 28).astype(np.uint8)
