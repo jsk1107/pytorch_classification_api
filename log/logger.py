@@ -2,13 +2,15 @@ import logging
 from logging import handlers
 import os
 
-def get_logger(config, save_dir):
+def get_logger(config, save_dir, letter):
     mylogger = logging.getLogger(config.project_name)
     mylogger.setLevel(logging.INFO)
 
     formatter = logging.Formatter('%(asctime)s, %(message)s')
 
-    loghandler = handlers.TimedRotatingFileHandler(filename=os.path.join(save_dir, 'logging.log'),
+    if not os.path.exists(os.path.join(save_dir, letter)):
+        os.makedirs(os.path.join(save_dir, letter))
+    loghandler = handlers.TimedRotatingFileHandler(filename=os.path.join(save_dir, letter, 'logging.log'),
                                                    when='midnight',
                                                    interval=1,
                                                    encoding='utf-8')

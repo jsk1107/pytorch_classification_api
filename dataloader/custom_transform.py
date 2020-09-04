@@ -11,13 +11,13 @@ def transforms_train(config):
     composed_transform = Compose([
                                   RandomShift(),
                                   RandomRotation(),
-
+                                  Normalize(),
                                   ToTensor()])
     return composed_transform
 
 
 def transforms_test(config):
-    composed_transform = Compose([Resize(config.resize),
+    composed_transform = Compose([
                                   Normalize(),
                                   ToTensor()])
     return composed_transform

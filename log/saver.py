@@ -19,15 +19,15 @@ class Saver(object):
 
         self.expriment_dir = os.path.join(self.directory, f'{TODAY}_{run_id}')
 
-        if os.path.exists(self.expriment_dir):
-            os.makedirs(self.expriment_dir, exist_ok=True)
+        # if not os.path.exists(self.expriment_dir):
+        #     os.makedirs(self.expriment_dir, exist_ok=True)
 
-    def save_checkpoint(self, state, is_best, filename='checkpoint.pth.tar'):
+    def save_checkpoint(self, letter, state, is_best, filename='checkpoint.pth.tar'):
         '''save checkpoint'''
 
-        filename = os.path.join(self.expriment_dir, filename)
-        if not os.path.exists(os.path.join(self.expriment_dir)):
-            os.makedirs(os.path.join(self.expriment_dir))
+        filename = os.path.join(self.directory, letter, filename)
+        if not os.path.exists(os.path.join(self.directory, letter)):
+            os.makedirs(os.path.join(self.directory, letter))
         torch.save(state, filename)
         if is_best:
             best_pred = state['best_pred']
