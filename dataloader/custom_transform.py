@@ -1,12 +1,15 @@
 from torch.jit.annotations import List, Dict, Tuple
+import random
 import numpy as np
 import torch
 from PIL import Image
 import cv2
+import torchvision.transforms.functional as F
 
 
 def transforms_train(config):
     composed_transform = Compose([Resize(config.resize),
+                                  Normalize(),
                                   ToTensor()])
     return composed_transform
 
@@ -61,6 +64,46 @@ class Resize(object):
         letter = sample['letter']
         img = cv2.resize(img, dsize=(self.width, self.height), interpolation=cv2.INTER_AREA)
         sample = {'img': img, 'letter': letter, 'target': target}
+
+        return sample
+
+
+class RandomRotation(object):
+    def __init__(self, degree):
+        if degree < 0:
+            ValueError('It must be positive')
+        self.degree = (-degree, degree)
+
+    @staticmethod
+    
+    def get_params(degree):
+        angle = random.uniform(degree[0], degree[1])
+
+        return angle
+
+    def __call__(self, sample):
+        img = sample['img']
+        h, w = img.shape[:2]
+        angle = self.get_params(self.degree)
+        (cX, cY) = (w/2, h/2)
+        M = cv2.getRotationMatrix2D((cX, cY), self.degree, scale=1.0)
+        cv2.warpAffine(img, M, )
+
+        sample['img'] = img
+
+        return sample
+
+
+class RandomShift(object):
+    def __init__(self, translate):
+        self.translate = translate
+
+    def __call__(self, sample):
+        img = sample['img']
+
+        img = F.affine(img, self.translate)
+
+        sample['img'] = img
 
         return sample
 

@@ -2,6 +2,7 @@ import os
 from torch.utils.data import Dataset
 from dataloader.utils import label_map
 import cv2
+from PIL import Image
 import pandas as pd
 import numpy as np
 
@@ -89,6 +90,8 @@ class DaconDataloader(Dataset):
         letter = self.csv_dataset.loc[idx, 'letter']
         fc_img = self.csv_dataset.loc[idx, '0':]
         img = np.array(fc_img).reshape(28, 28).astype(np.uint8)
+
+        img = Image.fromarray(img).convert('RGB')
         letter_value = self.LETTER_DICT[letter]
         if self.split == 'train':
             target = self.csv_dataset.loc[idx, 'digit']

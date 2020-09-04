@@ -95,7 +95,7 @@ class Trainer(object):
                 self.tensorboardsummary.visualize_image(self.writer, img[0], target[0], output[0], i)
         self.writer.add_scalar('train/total_loss_epoch', train_loss, epoch)
 
-        # self.model.eval()
+        self.model.eval()
         self.metric.reset()
         val_loss = .0
         val_len = self.train_loader.__len__()
@@ -109,6 +109,7 @@ class Trainer(object):
                     img, target = img.cuda(), target.cuda()
 
                 with torch.no_grad():
+                    print(img.size())
                     output = self.model(img)
                 loss = self.criterion(output, target)
                 val_loss += loss.item()

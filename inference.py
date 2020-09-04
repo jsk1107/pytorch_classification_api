@@ -20,15 +20,16 @@ LETTER_DICT = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7, '
 for k in LETTER_DICT.keys():
     letter_pd = test_dataset.loc[test_dataset['letter'] == k, :]
     letter_pd = letter_pd.reset_index(inplace=False)
-    model = torch.load(os.path.join(model_path, '20200830_5', k, 'checkpoint.pth.tar'))
+    model = torch.load(os.path.join(model_path, '20200830_0', 'checkpoint.pth.tar'))
 
     for j in range(len(letter_pd)):
         id = letter_pd.loc[j, 'id']
         img = letter_pd.loc[j, '0':]
         img = np.array(img).reshape(28, 28).astype(np.uint8)
-        digit_img = torch.from_numpy(digit_img).type(torch.FloatTensor)
+        digit_img = torch.from_numpy(img).type(torch.FloatTensor)
         digit_img = digit_img.unsqueeze(0)
         digit_img = digit_img.unsqueeze(0)
+        print(digit_img.size())
         output = model(digit_img)
         pred_digit = torch.argmax(output, dim=1).cpu().data.numpy()
         submission_dataset.loc[submission_dataset['id'] == id, 'digit'] = pred_digit
