@@ -11,7 +11,7 @@ def transforms_train(config):
     composed_transform = Compose([
                                   RandomShift(),
                                   RandomRotation(),
-                                  Normalize(),
+
                                   ToTensor()])
     return composed_transform
 
@@ -97,7 +97,7 @@ class RandomRotation(object):
 
 
 class RandomShift(object):
-    def __init__(self, translate=10):
+    def __init__(self, translate=8):
         if translate < 0:
             ValueError('It must be positive')
         self.translate = (-translate, translate)

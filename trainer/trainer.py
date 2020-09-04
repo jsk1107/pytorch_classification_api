@@ -98,9 +98,9 @@ class Trainer(object):
         self.model.eval()
         self.metric.reset()
         val_loss = .0
-        val_len = self.train_loader.__len__()
+        val_len = self.val_loader.__len__()
 
-        with tqdm(self.train_loader) as tbar:
+        with tqdm(self.val_loader) as tbar:
             for i, sample in enumerate(tbar):
                 img = sample['img']
                 target = sample['target']
@@ -109,7 +109,6 @@ class Trainer(object):
                     img, target = img.cuda(), target.cuda()
 
                 with torch.no_grad():
-                    print(img.size())
                     output = self.model(img)
                 loss = self.criterion(output, target)
                 val_loss += loss.item()
