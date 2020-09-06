@@ -84,12 +84,11 @@ class Trainer(object):
                 loss = self.criterion(output, target)
                 loss.backward()
                 self.optimizer.step()
-
                 train_loss += loss.item()
-
                 tbar.set_description(f'EPOCH : {epoch} | Train loss : {train_loss / (i + 1):.3f}')
                 self.writer.add_scalar('train/total_loss_iter', loss.item(), i + epoch * train_len)
                 self.tensorboardsummary.visualize_image(self.writer, img[0], target[0], output[0], i)
+        self.schduler.step()
         self.writer.add_scalar('train/total_loss_epoch', train_loss, epoch)
 
     def validation(self, epoch):
