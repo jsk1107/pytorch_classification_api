@@ -27,7 +27,7 @@ class Trainer(object):
         self.logger = get_logger(self.config, self.saver.directory)
 
         # Define DataLoader
-        self.train_loader, self.val_loader, self.label_map = get_dataloader(config)
+        self.train_loader, self.label_map = get_dataloader(config)
 
         # Define Network(Resnet50)
         self.model = resnet.ResNet(resnet.Bottleneck, [3, 4, 6, 3], 10)
@@ -93,12 +93,12 @@ class Trainer(object):
         self.writer.add_scalar('train/total_loss_epoch', train_loss, epoch)
 
     def validation(self, epoch):
-        self.model.eval()
+        # self.model.eval()
         self.metric.reset()
         val_loss = .0
-        val_len = self.val_loader.__len__()
+        val_len = self.train_loader.__len__()
 
-        with tqdm(self.val_loader) as tbar:
+        with tqdm(self.train_loader) as tbar:
             for i, sample in enumerate(tbar):
                 img = sample['img']
                 target = sample['target']

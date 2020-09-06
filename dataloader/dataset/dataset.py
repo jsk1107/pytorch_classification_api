@@ -53,7 +53,6 @@ class DaconDataloader(Dataset):
         self.split = split
         self.transforms = transforms
 
-        self.letter_name = [f.name for f in os.scandir(self.root_dir)]
         self.csv_dataset = pd.read_csv(os.path.join(self.root_dir, split + '.csv'))
         self.LETTER_DICT = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7, 'I': 8, 'J': 9, 'K': 10, 'L': 11,
                    'M': 12, 'N': 13, 'O': 14, 'P': 15, 'Q': 16, 'R': 17, 'S': 18, 'T': 19, 'U': 20, 'V': 21,
@@ -65,7 +64,6 @@ class DaconDataloader(Dataset):
     def __getitem__(self, idx):
 
         sample = self.load_data(idx)
-
 
         if self.transforms is not None:
             sample = self.transforms(sample)
@@ -91,7 +89,7 @@ class DaconDataloader(Dataset):
         letter = self.csv_dataset.loc[idx, 'letter']
         fc_img = self.csv_dataset.loc[idx, '0':]
         img = np.array(fc_img).reshape(28, 28).astype(np.uint8)
-        img = cv2.inRange(img, 161, 255)
+        # img = cv2.inRange(img, 161, 255)
         letter_value = self.LETTER_DICT[letter]
         if self.split == 'train':
             target = self.csv_dataset.loc[idx, 'digit']

@@ -32,14 +32,13 @@ class MetricTracker(object):
 
     def update(self, target, preds):
         pred = torch.argmax(preds, dim=1)
-
+        print(pred)
         target = target.cpu().data.numpy()
         pred = pred.cpu().data.numpy()
         for i in range(len(target)):
             self.confusion_metric.loc[self.switch_kv_label_map[target[i]],
                                   self.switch_kv_label_map[pred[i]]] += 1
-        # if self.writer is not None:
-        #     self.writer.add_scalar(key, value)
+
 
     def result(self):
         return self.confusion_metric

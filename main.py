@@ -10,11 +10,12 @@ def main():
     config = ParseConfig(parser).parse_args()
 
     print(config)
+    trainer = Trainer(config)
+
     print('Start Epoch: {}'.format(config.start_epoch))
     print('Total Epoch: {}'.format(config.epoch))
 
     for epoch in range(config.start_epoch, config.epoch):
-        trainer = Trainer(config)
         trainer.train(epoch)
         trainer.validation(epoch)
     trainer.writer.close()
