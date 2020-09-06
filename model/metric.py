@@ -32,7 +32,6 @@ class MetricTracker(object):
 
     def update(self, target, preds):
         pred = torch.argmax(preds, dim=1)
-        print(pred)
         target = target.cpu().data.numpy()
         pred = pred.cpu().data.numpy()
         for i in range(len(target)):

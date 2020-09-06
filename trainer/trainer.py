@@ -20,11 +20,11 @@ class Trainer(object):
 
         # Define Tensorboard
         if self.config.tensorboard:
-            self.tensorboardsummary = TensorboardSummary(self.saver.directory)
+            self.tensorboardsummary = TensorboardSummary(self.saver.expriment_dir)
             self.writer = self.tensorboardsummary.create_summary()
 
         # Define Logger
-        self.logger = get_logger(self.config, self.saver.directory)
+        self.logger = get_logger(self.config, self.saver.expriment_dir)
 
         # Define DataLoader
         self.train_loader, self.label_map = get_dataloader(config)
