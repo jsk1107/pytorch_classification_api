@@ -71,7 +71,7 @@ class Resize(object):
 
 
 class RandomRotation(object):
-    def __init__(self, degree=180):
+    def __init__(self, degree=45):
         if degree < 0:
             ValueError('It must be positive')
         self.degree = (-degree, degree)
@@ -97,7 +97,7 @@ class RandomRotation(object):
 
 
 class RandomShift(object):
-    def __init__(self, translate=8):
+    def __init__(self, translate=7):
         if translate < 0:
             ValueError('It must be positive')
         self.translate = (-translate, translate)
@@ -117,6 +117,8 @@ class RandomShift(object):
         M = np.array([[1, 0, shift_x], [0, 1, shift_y]])
         dst = cv2.warpAffine(img, M, (w, h))
 
+        cv2.imshow('img', dst)
+        cv2.waitKey(0)
         sample['img'] = dst
 
         return sample

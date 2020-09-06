@@ -91,7 +91,7 @@ class DaconDataloader(Dataset):
         letter = self.csv_dataset.loc[idx, 'letter']
         fc_img = self.csv_dataset.loc[idx, '0':]
         img = np.array(fc_img).reshape(28, 28).astype(np.uint8)
-
+        img = cv2.inRange(img, 161, 255)
         letter_value = self.LETTER_DICT[letter]
         if self.split == 'train':
             target = self.csv_dataset.loc[idx, 'digit']
