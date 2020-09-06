@@ -92,7 +92,7 @@ class Trainer(object):
         self.writer.add_scalar('train/total_loss_epoch', train_loss, epoch)
 
     def validation(self, epoch):
-        self.model.eval()
+        # self.model.eval()
         self.metric.reset()
         val_loss = .0
         val_len = self.val_loader.__len__()
