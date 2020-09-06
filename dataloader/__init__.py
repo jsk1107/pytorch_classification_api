@@ -46,8 +46,7 @@ def get_dataloader(config):
         train_loader = DataLoader(dataset=train_dataset,
                                   batch_size=config.batch_size,
                                   pin_memory=config.pin_memory,
-                                  num_workers=config.num_workers,
-                                  sampler=SubsetRandomSampler(train_indices))
+                                  num_workers=config.num_workers)
 
         val_loader = DataLoader(dataset=train_dataset,
                                   batch_size=config.batch_size,

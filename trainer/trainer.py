@@ -97,7 +97,7 @@ class Trainer(object):
         val_loss = .0
         val_len = self.val_loader.__len__()
 
-        with tqdm(self.val_loader) as tbar:
+        with tqdm(self.train_loader) as tbar:
             for i, sample in enumerate(tbar):
                 img = sample['img']
                 target = sample['target']
