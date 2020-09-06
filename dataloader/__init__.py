@@ -32,7 +32,7 @@ def get_dataloader(config):
         return train_loader, test_loader, label_map
 
     elif config.project_name == 'Dacon_cls':
-        train_dataset = dataset.DaconDataloader(config.root_dir, config.label_map_path, split='train', transforms=transforms_train(config))
+        train_dataset = dataset.DaconDataloader(config.root_dir, config.label_map_path, split='train', transforms=transforms_train())
         label_map = train_dataset.classes
 
         train_cnt = train_dataset.__len__()
