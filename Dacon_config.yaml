@@ -5,7 +5,7 @@ gpu_ids: 0
 tensorboard: False
 
 # DataLoader config
-root_dir: './data/dacon_cls/split_letter'
+root_dir: './data/dacon_cls/'
 label_map_path: './dataloader/dataset/labelmap/dacon_cls.name'
 num_workers: 10
 pin_memory: True

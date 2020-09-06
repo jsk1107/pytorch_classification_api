@@ -48,13 +48,13 @@ class ClassificationLoader(Dataset):
 
 class DaconDataloader(Dataset):
 
-    def __init__(self, root_dir, label_map_path, letter, split='train', transforms=None):
+    def __init__(self, root_dir, label_map_path, split='train', transforms=None):
         self.root_dir = root_dir
         self.split = split
         self.transforms = transforms
 
         self.letter_name = [f.name for f in os.scandir(self.root_dir)]
-        self.csv_dataset = pd.read_csv(os.path.join(self.root_dir, letter + '.csv'))
+        self.csv_dataset = pd.read_csv(os.path.join(self.root_dir, split + '.csv'))
         self.LETTER_DICT = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7, 'I': 8, 'J': 9, 'K': 10, 'L': 11,
                    'M': 12, 'N': 13, 'O': 14, 'P': 15, 'Q': 16, 'R': 17, 'S': 18, 'T': 19, 'U': 20, 'V': 21,
                    'W': 22, 'X': 23, 'Y': 24, 'Z': 25}

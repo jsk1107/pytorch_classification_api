@@ -117,8 +117,6 @@ class RandomShift(object):
         M = np.array([[1, 0, shift_x], [0, 1, shift_y]])
         dst = cv2.warpAffine(img, M, (w, h))
 
-        cv2.imshow('img', dst)
-        cv2.waitKey(0)
         sample['img'] = dst
 
         return sample

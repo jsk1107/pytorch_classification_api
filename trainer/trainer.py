@@ -24,11 +24,10 @@ class Trainer(object):
             self.writer = self.tensorboardsummary.create_summary()
 
         # Define Logger
-        # self.logger = get_logger(self.config, self.saver.directory)
+        self.logger = get_logger(self.config, self.saver.directory)
 
         # Define DataLoader
-
-        self.label_map = label_map(self.config.label_map_path)
+        self.train_loader, self.val_loader, self.label_map = get_dataloader(config)
 
         # Define Network(Resnet50)
         self.model = resnet.ResNet(resnet.Bottleneck, [3, 4, 6, 3], 10)
@@ -67,11 +66,8 @@ class Trainer(object):
             self.best_pred = checkpoint['best_pred']
             print(f'loaded checkpoint {self.config.resume} epoch {checkpoint["epoch"]}')
 
-    def train(self, epoch, letter):
+    def train(self, epoch):
 
-        self.train_loader, self.val_loader, self.label_map = get_dataloader(self.config, letter)
-        # Define Logger
-        self.logger = get_logger(self.config, self.saver.directory, letter)
         self.model.train()
         train_loss = .0
 
@@ -92,18 +88,17 @@ class Trainer(object):
                 train_loss += loss.item()
 
                 tbar.set_description(f'EPOCH : {epoch} | Train loss : {train_loss / (i + 1):.3f}')
+                self.writer.add_scalar('train/total_loss_iter', loss.item(), i + epoch * train_len)
+                self.tensorboardsummary.visualize_image(self.writer, img[0], target[0], output[0], i)
+        self.writer.add_scalar('train/total_loss_epoch', train_loss, epoch)
 
-
-                # self.writer.add_scalar('train/total_loss_iter', loss.item(), i + epoch * train_len)
-                # self.tensorboardsummary.visualize_image(self.writer, img[0], target[0], output[0], i)
-        # self.writer.add_scalar('train/total_loss_epoch', train_loss, epoch)
-
-        # self.model.eval()
+    def validation(self, epoch):
+        self.model.eval()
         self.metric.reset()
         val_loss = .0
         val_len = self.val_loader.__len__()
 
-        with tqdm(self.train_loader) as tbar:
+        with tqdm(self.val_loader) as tbar:
             for i, sample in enumerate(tbar):
                 img = sample['img']
                 target = sample['target']
@@ -116,7 +111,7 @@ class Trainer(object):
                 loss = self.criterion(output, target)
                 val_loss += loss.item()
                 tbar.set_description(f'Validation loss : {val_loss / (i + 1):.3f}')
-                # self.writer.add_scalar('validation/val_loss_iter', loss.item(), i + epoch * val_len)
+                self.writer.add_scalar('validation/val_loss_iter', loss.item(), i + epoch * val_len)
 
                 self.metric.update(target, output)
             self.logger.info(f'Cunfusion Metric : Row is True, Col is Pred. \n {self.metric.result()}')
@@ -147,7 +142,7 @@ class Trainer(object):
         #          'state_dict': self.model.state_dict(),
         #          'module': self.model.modules(),
         #          'optimizer': self.optimizer.state_dict()}
-        self.saver.save_checkpoint(letter, state, is_best)
+        self.saver.save_checkpoint(state, is_best)
 
 
 if __name__ == '__main__':
