@@ -67,18 +67,6 @@ class DaconDataloader(Dataset):
 
         if self.transforms is not None:
             sample = self.transforms(sample)
-
-        # 데이터 잘 불러와졌는지 체크해보기
-        # img = sample['img']
-        # img = img.numpy().squeeze(0).astype(np.uint8)
-        #
-        # targer = sample['target']
-        # letter = sample['letter']
-        #
-        # print(f'idx : {idx}, digit : {targer} | letter : {letter}')
-        # cv2.imshow('img', img)
-        # cv2.waitKey(0)
-        # cv2.destroyAllWindows()
         return sample
 
     def __len__(self):

@@ -7,7 +7,7 @@ import cv2
 import torchvision.transforms.functional as F
 
 
-def transforms_train(config):
+def transforms_train():
     composed_transform = Compose([
                                   RandomShift(),
                                   RandomRotation(),
@@ -16,7 +16,7 @@ def transforms_train(config):
     return composed_transform
 
 
-def transforms_test(config):
+def transforms_test():
     composed_transform = Compose([
                                   Normalize(),
                                   ToTensor()])
@@ -71,13 +71,12 @@ class Resize(object):
 
 
 class RandomRotation(object):
-    def __init__(self, degree=45):
+    def __init__(self, degree=30):
         if degree < 0:
             ValueError('It must be positive')
         self.degree = (-degree, degree)
 
     @staticmethod
-    
     def get_params(degree):
         angle = random.uniform(degree[0], degree[1])
 
@@ -97,7 +96,7 @@ class RandomRotation(object):
 
 
 class RandomShift(object):
-    def __init__(self, translate=7):
+    def __init__(self, translate=5):
         if translate < 0:
             ValueError('It must be positive')
         self.translate = (-translate, translate)

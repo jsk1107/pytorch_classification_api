@@ -9,7 +9,7 @@ root_dir: './data/dacon_cls/'
 label_map_path: './dataloader/dataset/labelmap/dacon_cls.name'
 num_workers: 10
 pin_memory: True
-batch_size: 128
+batch_size: 64
 resize: [28, 28]
 start_epoch: 0
 epoch: 50
