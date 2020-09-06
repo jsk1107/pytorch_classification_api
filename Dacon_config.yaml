@@ -19,6 +19,6 @@ model: 'resnet-50'
 # [ inception-v3, vgg-16, resnet-18, resnet-50, resnet-101, resnet-152, darknet19, efficientnet-b0,
 # efficientnet-b1, efficientnet-b2, efficientnet-b3, efficientnet-b4, efficientnet-b5 ]
 lr: 0.01
-step_size: 2
-gamma: 0.9
+milestones: [30, 80, 150]
+gamma: 0.1
 resume: False # Path checkpoint

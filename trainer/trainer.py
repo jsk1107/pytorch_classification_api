@@ -36,7 +36,7 @@ class Trainer(object):
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.config.lr)
 
         # Define Scheduler
-        self.schduler = torch.optim.lr_scheduler.ExponentialLR(self.optimizer, config.gamma)
+        self.schduler = torch.optim.lr_scheduler.MultiStepLR(self.optimizer, config.milestones, config.gamma)
 
         # TODO: Loss
         self.criterion = torch.nn.CrossEntropyLoss()
