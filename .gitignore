@@ -135,7 +135,9 @@ dmypy.json
 # pytype static type analyzer
 .pytype/
 
+# End of https://www.toptal.com/developers/gitignore/api/python
+
+
 # custom ignore
 run
 .idea
-# End of https://www.toptal.com/developers/gitignore/api/python

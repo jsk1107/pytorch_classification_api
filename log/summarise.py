@@ -12,6 +12,7 @@ class TensorboardSummary(object):
         writer = SummaryWriter(log_dir=os.path.join(self.save_directory))
         return writer
 
-    def visualize_image(self, writer, image, target, pred, global_step):
+    @staticmethod
+    def visualize_image(writer, image, target, global_step):
         grid_image = make_grid(image, 3, normalize=True)
         writer.add_image(f'Image/{target}', grid_image, global_step)

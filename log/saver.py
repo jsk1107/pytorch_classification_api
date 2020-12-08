@@ -51,6 +51,5 @@ class Saver(object):
                 shutil.copyfile(filename, os.path.join(self.directory, 'model_best.pth.tar'))
 
 
-
-if __name__ =='__main__':
+if __name__ == '__main__':
     print(TODAY)

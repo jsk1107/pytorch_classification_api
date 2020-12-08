@@ -38,7 +38,7 @@ class Trainer(object):
         # Define Scheduler
         self.schduler = torch.optim.lr_scheduler.MultiStepLR(self.optimizer, config.milestones, config.gamma)
 
-        # TODO: Loss
+        # Define Loss
         self.criterion = torch.nn.CrossEntropyLoss()
 
         # Define Metric
