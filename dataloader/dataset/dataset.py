@@ -2,9 +2,6 @@ import os
 from torch.utils.data import Dataset
 from dataloader.utils import label_map
 import cv2
-from PIL import Image
-import pandas as pd
-import numpy as np
 
 
 class ClassificationLoader(Dataset):
@@ -44,53 +41,6 @@ class ClassificationLoader(Dataset):
         data_dir = os.path.join(self.root_dir, self.split)
         data_list = [os.path.join(data_dir, f.name) for f in os.scandir(data_dir)]
         return data_list
-
-
-class DaconDataloader(Dataset):
-
-    def __init__(self, root_dir, label_map_path, split='train', transforms=None):
-        self.root_dir = root_dir
-        self.split = split
-        self.transforms = transforms
-
-        self.csv_dataset = pd.read_csv(os.path.join(self.root_dir, split + '.csv'))
-        self.LETTER_DICT = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7, 'I': 8, 'J': 9, 'K': 10, 'L': 11,
-                   'M': 12, 'N': 13, 'O': 14, 'P': 15, 'Q': 16, 'R': 17, 'S': 18, 'T': 19, 'U': 20, 'V': 21,
-                   'W': 22, 'X': 23, 'Y': 24, 'Z': 25}
-        self.kv_swich_LETTER_DICT = {y: x for x, y in self.LETTER_DICT.items()}
-        self.classes = label_map(label_map_path)
-        # self.letter_pd = self.group_letter()
-
-    def __getitem__(self, idx):
-
-        sample = self.load_data(idx)
-
-        if self.transforms is not None:
-            sample = self.transforms(sample)
-        return sample
-
-    def __len__(self):
-        return len(self.csv_dataset)
-
-    def load_data(self, idx):
-
-        letter = self.csv_dataset.loc[idx, 'letter']
-        fc_img = self.csv_dataset.loc[idx, '0':]
-        img = np.array(fc_img).reshape(28, 28).astype(np.uint8)
-        # img = cv2.inRange(img, 161, 255)
-        letter_value = self.LETTER_DICT[letter]
-        if self.split == 'train':
-            target = self.csv_dataset.loc[idx, 'digit']
-            return {'img': img, 'letter': letter_value, 'target': target}
-        return {'img': img, 'letter': letter_value}
-
-    # def group_letter(self):
-    #     letter_pd = {}
-    #     for i in range(len(self.LETTER_DICT)):
-    #         letter = self.kv_swich_LETTER_DICT[i]
-    #         group = self.csv_dataset.loc[self.csv_dataset['letter'] == letter, :]
-    #         letter_pd[letter] = group
-    #     return letter_pd
 
 
 if __name__ == '__main__':
