@@ -1,9 +1,9 @@
 import argparse
 from parse_config import ParseConfig
 from trainer.trainer import Trainer
+from inferencer.inferencer import Inferencer
 
-
-def main(train=True):
+def main():
     parser = argparse.ArgumentParser('Classification API')
     parser.add_argument('--config-file', '-c', type=str, default='./config.yaml',
                         help='Config File')
@@ -11,7 +11,7 @@ def main(train=True):
 
     print(config)
 
-    if train:
+    if config.train:
         trainer = Trainer(config)
 
         print('Start Epoch: {}'.format(config.start_epoch))
@@ -22,8 +22,12 @@ def main(train=True):
             trainer.validation(epoch)
         trainer.writer.close()
     else:
+
+        inferencer = Inferencer()
         pass
 
+
 if __name__ == '__main__':
-    train = True
-    main(train)
+
+    main()
+

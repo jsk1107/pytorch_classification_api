@@ -1,7 +1,6 @@
 import os
 import torch
 from dataloader import get_dataloader
-from model import resnet
 from log.saver import Saver
 from log.summarise import TensorboardSummary
 from log.logger import get_logger
@@ -10,6 +9,8 @@ from model.metric import MetricTracker, accuracy
 from tqdm import tqdm
 from dataloader.utils import label_map
 
+from efficientnet_pytorch import EfficientNet
+from torchvision.models import *
 
 class Trainer(object):
     def __init__(self, config):
@@ -30,7 +31,46 @@ class Trainer(object):
         self.train_loader, self.val_loader, self.label_map = get_dataloader(config)
 
         # Define Network(Resnet50)
-        self.model = resnet.ResNet(resnet.Bottleneck, [3, 4, 6, 3], 10)
+        if self.config.model == 'resnet-18':
+            self.model = resnet18(pretrained=True, progress=True, num_classes=len(self.label_map))
+        elif self.config.model == 'resnet-34':
+            self.model = resnet34(pretrained=True, progress=True, num_classes=len(self.label_map))
+        elif self.config.model == 'resnet-50':
+            self.model = resnet50(pretrained=True, progress=True, num_classes=len(self.label_map))
+        elif self.config.model == 'resnet-101':
+            self.model = resnet101(pretrained=True, progress=True, num_classes=len(self.label_map))
+        elif self.config.model == 'resnet-152':
+            self.model = resnet152(pretrained=True, progress=True, num_classes=len(self.label_map))
+        elif self.config.model == 'resnext-50':
+            self.model = resnext50_32x4d(pretrained=True, progress=True, num_classes=len(self.label_map))
+        elif self.config.model == 'resnext-101':
+            self.model = resnext101_32x8d(pretrained=True, progress=True, num_classes=len(self.label_map))
+        elif self.config.model == 'vgg-19':
+            self.model = vgg19(pretrained=True, progress=True, num_classes=len(self.label_map))
+        elif self.config.model == 'inception-v3':
+            self.model = inception_v3(pretrained=True, progress=True, num_classes=len(self.label_map))
+        elif self.config.model == 'mobilenet-v2':
+            self.model = mobilenet_v2(pretrained=True, progress=True, num_classes=len(self.label_map))
+        elif self.config.model == 'mobilenet-v2':
+            self.model = mobilenet_v2(pretrained=True, progress=True, num_classes=len(self.label_map))
+        elif self.config.model == 'efficientnet-b0':
+            self.model = EfficientNet.from_pretrained('efficientnet-b0', num_classes=len(self.label_map))
+        elif self.config.model == 'efficientnet-b1':
+            self.model = EfficientNet.from_pretrained('efficientnet-b1', num_classes=len(self.label_map))
+        elif self.config.model == 'efficientnet-b2':
+            self.model = EfficientNet.from_pretrained('efficientnet-b2', num_classes=len(self.label_map))
+        elif self.config.model == 'efficientnet-b3':
+            self.model = EfficientNet.from_pretrained('efficientnet-b3', num_classes=len(self.label_map))
+        elif self.config.model == 'efficientnet-b4':
+            self.model = EfficientNet.from_pretrained('efficientnet-b4', num_classes=len(self.label_map))
+        elif self.config.model == 'efficientnet-b5':
+            self.model = EfficientNet.from_pretrained('efficientnet-b5', num_classes=len(self.label_map))
+        elif self.config.model == 'efficientnet-b6':
+            self.model = EfficientNet.from_pretrained('efficientnet-b6', num_classes=len(self.label_map))
+        elif self.config.model == 'efficientnet-b7':
+            self.model = EfficientNet.from_pretrained('efficientnet-b7', num_classes=len(self.label_map))
+        else:
+            raise ImportError(f'=========> It is not found the {self.config.model}')
 
         # Define Optim
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.config.lr)
