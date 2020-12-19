@@ -20,8 +20,8 @@ def accuracy(target, preds):
 class MetricTracker(object):
     def __init__(self, label_map: List[str], writer=None):
         self.label_map = label_map
-        self.label_name = list(self.label_map.keys())
         self.switch_kv_label_map = {v: k for k, v in self.label_map.items()}
+        self.label_name = list(self.switch_kv_label_map.keys())
         self.writer = writer
         self.confusion_metric = pd.DataFrame(0, index=self.label_name, columns=self.label_name)
         self.reset()
@@ -35,8 +35,8 @@ class MetricTracker(object):
         target = target.cpu().data.numpy()
         pred = pred.cpu().data.numpy()
         for i in range(len(target)):
-            self.confusion_metric.loc[self.switch_kv_label_map[target[i]],
-                                  self.switch_kv_label_map[pred[i]]] += 1
+            self.confusion_metric.loc[self.label_map[target[i]],
+                                  self.label_map[pred[i]]] += 1
 
 
     def result(self):

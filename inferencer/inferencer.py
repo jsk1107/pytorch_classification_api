@@ -3,7 +3,6 @@ import os
 import torch
 import cv2
 import pandas as pd
-from model import resnet
 
 
 class Inferencer(object):

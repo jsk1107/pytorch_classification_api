@@ -1,6 +1,5 @@
 import os
 import torch
-from dataloader import get_dataloader
 from log.saver import Saver
 from log.summarise import TensorboardSummary
 from log.logger import get_logger
@@ -28,55 +27,25 @@ class Trainer(object):
         self.logger = get_logger(self.config, self.saver.expriment_dir)
 
         # Define DataLoader
-        self.train_loader, self.val_loader, self.label_map = get_dataloader(config)
+        self.train_loader, self.val_loader, self.label_map, self.num_classes = get_dataloader(self.config)
 
-        # Define Network(Resnet50)
-        if self.config.model == 'resnet-18':
-            self.model = resnet18(pretrained=True, progress=True, num_classes=len(self.label_map))
-        elif self.config.model == 'resnet-34':
-            self.model = resnet34(pretrained=True, progress=True, num_classes=len(self.label_map))
-        elif self.config.model == 'resnet-50':
-            self.model = resnet50(pretrained=True, progress=True, num_classes=len(self.label_map))
-        elif self.config.model == 'resnet-101':
-            self.model = resnet101(pretrained=True, progress=True, num_classes=len(self.label_map))
-        elif self.config.model == 'resnet-152':
-            self.model = resnet152(pretrained=True, progress=True, num_classes=len(self.label_map))
-        elif self.config.model == 'resnext-50':
-            self.model = resnext50_32x4d(pretrained=True, progress=True, num_classes=len(self.label_map))
-        elif self.config.model == 'resnext-101':
-            self.model = resnext101_32x8d(pretrained=True, progress=True, num_classes=len(self.label_map))
-        elif self.config.model == 'vgg-19':
-            self.model = vgg19(pretrained=True, progress=True, num_classes=len(self.label_map))
-        elif self.config.model == 'inception-v3':
-            self.model = inception_v3(pretrained=True, progress=True, num_classes=len(self.label_map))
-        elif self.config.model == 'mobilenet-v2':
-            self.model = mobilenet_v2(pretrained=True, progress=True, num_classes=len(self.label_map))
-        elif self.config.model == 'mobilenet-v2':
-            self.model = mobilenet_v2(pretrained=True, progress=True, num_classes=len(self.label_map))
-        elif self.config.model == 'efficientnet-b0':
-            self.model = EfficientNet.from_pretrained('efficientnet-b0', num_classes=len(self.label_map))
-        elif self.config.model == 'efficientnet-b1':
-            self.model = EfficientNet.from_pretrained('efficientnet-b1', num_classes=len(self.label_map))
-        elif self.config.model == 'efficientnet-b2':
-            self.model = EfficientNet.from_pretrained('efficientnet-b2', num_classes=len(self.label_map))
-        elif self.config.model == 'efficientnet-b3':
-            self.model = EfficientNet.from_pretrained('efficientnet-b3', num_classes=len(self.label_map))
-        elif self.config.model == 'efficientnet-b4':
-            self.model = EfficientNet.from_pretrained('efficientnet-b4', num_classes=len(self.label_map))
-        elif self.config.model == 'efficientnet-b5':
-            self.model = EfficientNet.from_pretrained('efficientnet-b5', num_classes=len(self.label_map))
-        elif self.config.model == 'efficientnet-b6':
-            self.model = EfficientNet.from_pretrained('efficientnet-b6', num_classes=len(self.label_map))
-        elif self.config.model == 'efficientnet-b7':
-            self.model = EfficientNet.from_pretrained('efficientnet-b7', num_classes=len(self.label_map))
+        # Define Network
+        network_name = self.config.model.split()[0]
+
+        if network_name != 'efficientnet':
+            print(f'==> Load pretrained weight.')
+            self.model = self.network(self.config.model, pretrained=True)
+            num_ftrs = self.model.fc.in_features
+            self.model.fc = torch.nn.Linear(num_ftrs, self.num_classes)
+            print(f'==> final layer channel is modified to {self.num_classes}')
         else:
-            raise ImportError(f'=========> It is not found the {self.config.model}')
+            self.model = self.network(self.config.model, self.num_classes)
 
         # Define Optim
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.config.lr)
 
         # Define Scheduler
-        self.schduler = torch.optim.lr_scheduler.MultiStepLR(self.optimizer, config.milestones, config.gamma)
+        self.schduler = torch.optim.lr_scheduler.MultiStepLR(self.optimizer, self.config.milestones, self.config.gamma)
 
         # Define Loss
         self.criterion = torch.nn.CrossEntropyLoss()
@@ -96,7 +65,7 @@ class Trainer(object):
 
         # Define resume
         self.best_pred = .0
-        if self.config.resume:
+        if self.config.resume is not None:
             if not os.path.isfile(self.config.resume):
                 raise FileNotFoundError('=> no checkpoint found at {}'.format(self.config.resume))
             checkpoint = torch.load(self.config.resume)
@@ -114,9 +83,8 @@ class Trainer(object):
         train_len = self.train_loader.__len__()
         with tqdm(self.train_loader) as tbar:
             for i, sample in enumerate(tbar):
-                img = sample['img']
+                img = sample['image']
                 target = sample['target']
-
                 if self.config.cuda:
                     img, target = img.cuda(), target.cuda()
                 self.optimizer.zero_grad()
@@ -126,20 +94,25 @@ class Trainer(object):
                 self.optimizer.step()
                 train_loss += loss.item()
                 tbar.set_description(f'EPOCH : {epoch} | Train loss : {train_loss / (i + 1):.3f}')
-                self.writer.add_scalar('train/total_loss_iter', loss.item(), i + epoch * train_len)
-                self.tensorboardsummary.visualize_image(self.writer, img[0], target[0], output[0], i)
+
+                if self.config.tensorboard:
+                    self.writer.add_scalar('train/total_loss_iter', loss.item(), i + epoch * train_len)
+                    self.tensorboardsummary.visualize_image(self.writer, img[0], target[0], i)
+
+        if self.config.tensorboard:
+            self.writer.add_scalar('train/total_loss_epoch', train_loss, epoch)
+
         self.schduler.step()
-        self.writer.add_scalar('train/total_loss_epoch', train_loss, epoch)
 
     def validation(self, epoch):
-        # self.model.eval()
+        self.model.eval()
         self.metric.reset()
         val_loss = .0
         val_len = self.val_loader.__len__()
 
-        with tqdm(self.train_loader) as tbar:
+        with tqdm(self.val_loader) as tbar:
             for i, sample in enumerate(tbar):
-                img = sample['img']
+                img = sample['image']
                 target = sample['target']
 
                 if self.config.cuda:
@@ -150,10 +123,12 @@ class Trainer(object):
                 loss = self.criterion(output, target)
                 val_loss += loss.item()
                 tbar.set_description(f'Validation loss : {val_loss / (i + 1):.3f}')
-                self.writer.add_scalar('validation/val_loss_iter', loss.item(), i + epoch * val_len)
-
                 self.metric.update(target, output)
-            self.logger.info(f'Cunfusion Metric : Row is True, Col is Pred. \n {self.metric.result()}')
+
+                if self.config.tensorboard:
+                    self.writer.add_scalar('validation/val_loss_iter', loss.item(), i + epoch * val_len)
+
+            self.logger.info(f'Epoch: {epoch} || Cunfusion Metric: Row is True, Col is Pred. \n {self.metric.result()}')
 
         ACC_PER_CATEGORY, mAP, mAR, TOTAL_F1_SCORE, TOTAL_ACC = self.metric.accuracy()
 
@@ -173,16 +148,59 @@ class Trainer(object):
         print(f'=============> Accuracy : {TOTAL_ACC}')
         # save checkpoint of best_model
         if TOTAL_ACC > self.best_pred:
-            is_best = False
+            is_best = True
             self.best_pred = TOTAL_ACC
-            state = self.model.module
-            # state = {'best_pred': TOTAL_ACC,
-            #          'epoch': epoch + 1,
-            #          'state_dict': self.model.state_dict(),
-            #          'module': self.model.modules(),
-            #          'optimizer': self.optimizer.state_dict()}
+            state = {'best_pred': TOTAL_ACC,
+                     'epoch': epoch + 1,
+                     'state_dict': self.model.state_dict(),
+                     'optimizer': self.optimizer.state_dict()}
             self.saver.save_checkpoint(state, is_best)
 
+
+    def network(self, model, pretrained=True, num_classes=None):
+
+        if model == 'resnet-18':
+            model = resnet18(pretrained=pretrained, progress=True)
+        elif model == 'resnet-34':
+            model = resnet34(pretrained=pretrained, progress=True)
+        elif model == 'resnet-50':
+            model = resnet50(pretrained=pretrained, progress=True)
+        elif model == 'resnet-101':
+            model = resnet101(pretrained=pretrained, progress=True)
+        elif model == 'resnet-152':
+            model = resnet152(pretrained=pretrained, progress=True)
+        elif model == 'resnext-50':
+            model = resnext50_32x4d(pretrained=pretrained, progress=True)
+        elif model == 'resnext-101':
+            model = resnext101_32x8d(pretrained=pretrained, progress=True)
+        elif model == 'vgg-19':
+            model = vgg19(pretrained=pretrained, progress=True)
+        elif model == 'inception-v3':
+            model = inception_v3(pretrained=pretrained, progress=True)
+        elif model == 'mobilenet-v2':
+            model = mobilenet_v2(pretrained=pretrained, progress=True)
+        elif model == 'mobilenet-v2':
+            model = mobilenet_v2(pretrained=pretrained, progress=True)
+        elif model == 'efficientnet-b0':
+            model = EfficientNet.from_pretrained('efficientnet-b0', num_classes=num_classes)
+        elif model == 'efficientnet-b1':
+            model = EfficientNet.from_pretrained('efficientnet-b1', num_classes=num_classes)
+        elif model == 'efficientnet-b2':
+            model = EfficientNet.from_pretrained('efficientnet-b2', num_classes=num_classes)
+        elif model == 'efficientnet-b3':
+            model = EfficientNet.from_pretrained('efficientnet-b3', num_classes=num_classes)
+        elif model == 'efficientnet-b4':
+            model = EfficientNet.from_pretrained('efficientnet-b4', num_classes=num_classes)
+        elif model == 'efficientnet-b5':
+            model = EfficientNet.from_pretrained('efficientnet-b5', num_classes=num_classes)
+        elif model == 'efficientnet-b6':
+            model = EfficientNet.from_pretrained('efficientnet-b6', num_classes=num_classes)
+        elif model == 'efficientnet-b7':
+            model = EfficientNet.from_pretrained('efficientnet-b7', num_classes=num_classes)
+        else:
+            raise ImportError(f'=========> It is not found the {model}')
+
+        return model
 
 if __name__ == '__main__':
     """Unit Test"""

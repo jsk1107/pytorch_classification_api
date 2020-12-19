@@ -2,45 +2,36 @@ import os
 from torch.utils.data import Dataset
 from dataloader.utils import label_map
 import cv2
+from torchvision.datasets import ImageFolder
 
 
-class ClassificationLoader(Dataset):
-    def __init__(self, root_dir, label_map_path, split='train', transform=None):
-        self.root_dir = root_dir
+class ClassificationLoader(ImageFolder):
+    def __init__(self, img_path, target, split='train', transforms=None):
+        self.img_path = img_path
+        self.target = target
         self.split = split
-        self.transform = transform
-        self.data_list = self._getDataPath()
-        self.classes = label_map(label_map_path)
+        self.transforms = transforms
 
     def __getitem__(self, idx):
         _im = self._load_img(idx)
         _target = self._load_target(idx)
         sample = {'image': _im, 'target': _target}
-        if self.split == 'train':
-            return self.transform(sample)
-        elif self.split == 'test':
 
-            return self.transform(sample)
-        else:
-            raise FileNotFoundError('Folder name is "train" or "test" only')
+        if self.transforms is not None:
+            return self.transforms(sample)
+        return sample
 
     def __len__(self):
-        return len(self.data_list)
+        return len(self.img_path)
 
     def _load_img(self, idx):
-        _im = cv2.imread(self.data_list[idx], cv2.IMREAD_COLOR)
+        _im = cv2.imread(self.img_path[idx], cv2.IMREAD_COLOR)
         _im = cv2.cvtColor(_im, cv2.COLOR_BGR2RGB)
         return _im
 
     def _load_target(self, idx):
-        _class = os.path.splitext(os.path.basename(self.data_list[idx]))[0].split('_')[1]
-        _target = self.classes[_class]
+        _target = self.target[idx]
         return _target
-
-    def _getDataPath(self):
-        data_dir = os.path.join(self.root_dir, self.split)
-        data_list = [os.path.join(data_dir, f.name) for f in os.scandir(data_dir)]
-        return data_list
 
 
 if __name__ == '__main__':

@@ -1,31 +1,61 @@
+import random
+import os
 import numpy as np
+from glob import glob
 from dataloader.dataset import dataset
 from dataloader.custom_transform import transforms_train, transforms_test
-from torch.utils.data import DataLoader, SubsetRandomSampler
+from torch.utils.data import DataLoader
 
 
 def get_dataloader(config):
 
-    train_dataset = dataset.ClassificationLoader(config.root_dir,
-                                                 config.label_map_path,
+    print('==> Create label_map & path')
+    classes = os.listdir(config.root_dir)
+    label_map = {idx: label for idx, label in enumerate(classes)}
+    num_classes = len(classes)
+
+    train_path = []
+    train_target = np.empty(0)
+    val_path = []
+    val_target = np.empty(0)
+
+    for i in range(len(label_map)):
+        img_data = glob(os.path.join(config.root_dir, label_map[i]) + '/*')
+        random.shuffle(img_data)
+
+        # 학습, 검증 이미지 경로 append하기
+        train_path += img_data[round(len(img_data) * config.val_size):]
+        val_path += img_data[:round(len(img_data) * config.val_size)]
+
+        # 학습, 검증 이미지 갯수만큼 target label 만들기
+        img_cnt = len(img_data[round(len(img_data) * config.val_size):])
+        train_target = np.append(train_target, np.repeat(i, img_cnt))
+        img_cnt = len(img_data[:round(len(img_data) * config.val_size)])
+        val_target = np.append(val_target, np.repeat(i, img_cnt))
+
+    # comb = list(zip(train_path, train_target))
+    # random.shuffle(comb)
+    # train_path, train_target = zip(*comb)
+    print('Done!')
+
+    train_dataset = dataset.ClassificationLoader(train_path,
+                                                 train_target,
                                                  split='train',
-                                                 transform=transforms_train(config))
+                                                 transforms=transforms_train(config))
 
-    test_dataset = dataset.ClassificationLoader(config.root_dir,
-                                                config.label_map_path,
-                                                split='test',
-                                                transform=transforms_test(config))
-
-    label_map = train_dataset.classes
+    val_dataset = dataset.ClassificationLoader(val_path,
+                                               val_target,
+                                               split='train',
+                                               transforms=transforms_test(config))
 
     train_loader = DataLoader(dataset=train_dataset,
                               batch_size=config.batch_size,
+                              shuffle=True,
                               pin_memory=config.pin_memory,
                               num_workers=config.num_workers)
-    test_loader = DataLoader(dataset=test_dataset,
-                             batch_size=config.batch_size,
-                              pin_memory=config.pin_memory,
-                              num_workers=config.num_workers)
+    val_loader = DataLoader(dataset=val_dataset,
+                            batch_size=config.batch_size,
+                            pin_memory=config.pin_memory,
+                            num_workers=config.num_workers)
 
-
-    return train_loader, test_loader, label_map
+    return train_loader, val_loader, label_map, num_classes

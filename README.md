@@ -1,6 +1,7 @@
 # Pytorch Classification API
 
-Pytorch를 이용하여 Classification API를 제작하였습니다. Clone하여 config파일만 수정하면 간단히 사용할 수 있습니다. 또한 Dockerfile을 제공하기 때문에 어디에서나 사용 가능합니다.
+Pytorch를 이용하여 Classification API를 제작하였습니다. Clone하여 config파일만 수정하면 간단히 사용할 수 있습니다.
+또한 Dockerfile을 제공하기 때문에 어디에서나 사용 가능합니다.
 
 #### 지원 가능한 모델
 - ResNet(2020.07.23)

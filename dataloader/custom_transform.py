@@ -7,16 +7,16 @@ import random
 
 
 def transforms_train(config):
-    composed_transform = Compose([Normalize(),
+    composed_transform = Compose([Resize(config.resize),
+                                  Normalize(),
                                   RandomRotation(),
-                                  Resize(config.resize),
                                   ToTensor()])
     return composed_transform
 
 
 def transforms_test(config):
-    composed_transform = Compose([Normalize(),
-                                  Resize(config.resize),
+    composed_transform = Compose([Resize(config.resize),
+                                  Normalize(),
                                   ToTensor()])
     return composed_transform
 
@@ -53,16 +53,28 @@ class Normalize(object):
 
 class Resize(object):
     def __init__(self, size: List[int]):
-        self.width = size[0]
-        self.height = size[1]
+        self.re_h, self.re_w = size[0], size[1]
 
     def __call__(self, sample):
         img = sample['image']
         target = sample['target']
 
-        img = cv2.resize(img, dsize=(self.width, self.height), interpolation=Image.BILINEAR)
+        h, w, c = img.shape
 
-        sample = {'image': img, 'target': target}
+        if h > w:
+            scale = self.re_h / h
+        else:
+            scale = self.re_w / w
+
+        resized_w = int(scale * w)
+        resized_h = int(scale * h)
+
+        img = cv2.resize(img, (resized_w, resized_h), interpolation=cv2.INTER_LINEAR)
+
+        new_img = np.zeros((self.re_h, self.re_w, c))
+        new_img[:resized_h, :resized_w, :] = img
+
+        sample = {'image': new_img, 'target': target}
 
         return sample
 
@@ -133,3 +145,23 @@ class ToTensor(object):
         sample = {'image': img, 'target': target}
 
         return sample
+
+
+if __name__ == '__main__':
+
+    path = r'C:\Users\QQQ\Pictures\20170415_164735.jpg'
+    img = cv2.imread(path)
+    # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+    cv2.namedWindow('img', cv2.WINDOW_NORMAL)
+    cv2.resizeWindow('img', 1000, 1000)
+    cv2.imshow('img', img)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+    sample = {}
+    sample['image'] = img
+    sample['target'] = np.array(0)
+    sample = Resize([480, 640])(sample)
+    new_img = sample['image']
+

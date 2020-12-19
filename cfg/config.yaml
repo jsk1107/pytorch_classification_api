@@ -1,28 +1,30 @@
 # Global config
-project_name: cifar10
+project_name: test
 cuda: False
 gpu_ids: 0
 tensorboard: True
-train: True
 
 # DataLoader config
-root_dir: /home/jsk/data/cifar10/
+root_dir: D:/data/img
 inference_dir:
-label_map_path: ./dataloader/dataset/labelmap/cifar10.name
-num_workers: 10
+val_size: 0.2
+label_map_path: ./dataloader/dataset/labelmap/cassava.name
+num_workers: 8
 pin_memory: True
-batch_size: 128
-resize: [32, 32]
+batch_size: 32
+resize: [224, 224] # [H, W]
 start_epoch: 0
 epoch: 5
 
 # Model config
-model: resnet-50
-# [ inception-v3, vgg-16, resnet-18, resnet-50, resnet-101, resnet-152, darknet19, efficientnet-b0,
-# efficientnet-b1, efficientnet-b2, efficientnet-b3, efficientnet-b4, efficientnet-b5 ]
+model: resnet-18
+# [ inception-v3, vgg-19, resnet-18, resnet-50, resnet-101, resnet-152, resnext-50, resnext-101, efficientnet-b0 ~ b7]
+# optimize learning rate
 lr: 0.001
+# opt scheduler
 gamma: 0.9
-model_path: ./run/cifar10/model_best.pth.tar #
-resume: False # Path checkpoint
+milestones: [10, 20]
+model_path: ./run/test/model_best.pth.tar #
+resume:  # Path checkpoint
 
 
