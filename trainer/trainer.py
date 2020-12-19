@@ -85,8 +85,10 @@ class Trainer(object):
             for i, sample in enumerate(tbar):
                 img = sample['image']
                 target = sample['target']
+
                 if self.config.cuda:
                     img, target = img.cuda(), target.cuda()
+
                 self.optimizer.zero_grad()
                 output = self.model(img)
                 loss = self.criterion(output, target)
@@ -123,7 +125,7 @@ class Trainer(object):
                 loss = self.criterion(output, target)
                 val_loss += loss.item()
                 tbar.set_description(f'Validation loss : {val_loss / (i + 1):.3f}')
-                self.metric.update(target, output)
+                self.metric.update(output, target)
 
                 if self.config.tensorboard:
                     self.writer.add_scalar('validation/val_loss_iter', loss.item(), i + epoch * val_len)

@@ -20,7 +20,7 @@ epoch: 5
 model: resnet-18
 # [ inception-v3, vgg-19, resnet-18, resnet-50, resnet-101, resnet-152, resnext-50, resnext-101, efficientnet-b0 ~ b7]
 # optimize learning rate
-lr: 0.001
+lr: 0.0001
 # opt scheduler
 gamma: 0.9
 milestones: [10, 20]

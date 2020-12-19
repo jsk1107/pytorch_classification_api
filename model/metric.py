@@ -30,14 +30,13 @@ class MetricTracker(object):
         for col in self.confusion_metric.columns:
             self.confusion_metric[col].values[:] = 0
 
-    def update(self, target, preds):
+    def update(self, preds, target):
         pred = torch.argmax(preds, dim=1)
         target = target.cpu().data.numpy()
         pred = pred.cpu().data.numpy()
         for i in range(len(target)):
             self.confusion_metric.loc[self.label_map[target[i]],
-                                  self.label_map[pred[i]]] += 1
-
+                                      self.label_map[pred[i]]] += 1
 
     def result(self):
         return self.confusion_metric

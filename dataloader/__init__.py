@@ -3,8 +3,9 @@ import os
 import numpy as np
 from glob import glob
 from dataloader.dataset import dataset
-from dataloader.custom_transform import transforms_train, transforms_test
+from dataloader.custom_transform import transforms_train, transforms_val
 from torch.utils.data import DataLoader
+from torchvision.datasets import ImageFolder
 
 
 def get_dataloader(config):
@@ -40,13 +41,11 @@ def get_dataloader(config):
 
     train_dataset = dataset.ClassificationLoader(train_path,
                                                  train_target,
-                                                 split='train',
                                                  transforms=transforms_train(config))
 
     val_dataset = dataset.ClassificationLoader(val_path,
                                                val_target,
-                                               split='train',
-                                               transforms=transforms_test(config))
+                                               transforms=transforms_val(config))
 
     train_loader = DataLoader(dataset=train_dataset,
                               batch_size=config.batch_size,

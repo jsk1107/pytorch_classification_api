@@ -6,15 +6,18 @@ from torchvision.datasets import ImageFolder
 
 
 class ClassificationLoader(ImageFolder):
-    def __init__(self, img_path, target, split='train', transforms=None):
+    def __init__(self, img_path, target, transforms=None):
         self.img_path = img_path
         self.target = target
-        self.split = split
         self.transforms = transforms
 
     def __getitem__(self, idx):
         _im = self._load_img(idx)
         _target = self._load_target(idx)
+
+        # cv2.imshow(f'{_target}', _im)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
         sample = {'image': _im, 'target': _target}
 
         if self.transforms is not None:
@@ -26,7 +29,7 @@ class ClassificationLoader(ImageFolder):
 
     def _load_img(self, idx):
         _im = cv2.imread(self.img_path[idx], cv2.IMREAD_COLOR)
-        _im = cv2.cvtColor(_im, cv2.COLOR_BGR2RGB)
+        # _im = cv2.cvtColor(_im, cv2.COLOR_BGR2RGB)
         return _im
 
     def _load_target(self, idx):

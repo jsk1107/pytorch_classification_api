@@ -9,12 +9,12 @@ import random
 def transforms_train(config):
     composed_transform = Compose([Resize(config.resize),
                                   Normalize(),
-                                  RandomRotation(),
+                                  # RandomRotation(),
                                   ToTensor()])
     return composed_transform
 
 
-def transforms_test(config):
+def transforms_val(config):
     composed_transform = Compose([Resize(config.resize),
                                   Normalize(),
                                   ToTensor()])
