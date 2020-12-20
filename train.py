@@ -1,7 +1,7 @@
 import argparse
 from parse_config import ParseConfig
 from trainer.trainer import Trainer
-from inferencer.inferencer import Inferencer
+
 
 def run():
     parser = argparse.ArgumentParser('Classification API')

@@ -137,10 +137,10 @@ class ToTensor(object):
         # Input Image shape : (H, W, C)
         # Change Image shape : (C, H, W)
         img = np.array(img).astype(np.float32).transpose((2,0,1))
-        target = np.array(target).astype(np.int64)
+        target = np.array(target).astype(np.float32)
 
-        img = torch.from_numpy(img).float()
-        target = torch.from_numpy(target)
+        img = torch.from_numpy(img).type(torch.FloatTensor)
+        target = torch.from_numpy(target).type(torch.LongTensor)
 
         sample = {'image': img, 'target': target}
 
@@ -165,3 +165,4 @@ if __name__ == '__main__':
     sample = Resize([480, 640])(sample)
     new_img = sample['image']
 
+torch.nn.Module

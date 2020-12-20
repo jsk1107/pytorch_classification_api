@@ -7,7 +7,6 @@ from dataloader import get_dataloader
 from model.metric import MetricTracker, accuracy
 from tqdm import tqdm
 from dataloader.utils import label_map
-
 from efficientnet_pytorch import EfficientNet
 from torchvision.models import *
 
@@ -30,22 +29,22 @@ class Trainer(object):
         self.train_loader, self.val_loader, self.label_map, self.num_classes = get_dataloader(self.config)
 
         # Define Network
-        network_name = self.config.model.split()[0]
+        network_name = self.config.model.split('-')[0]
 
         if network_name != 'efficientnet':
             print(f'==> Load pretrained weight.')
-            self.model = self.network(self.config.model, pretrained=True)
-            num_ftrs = self.model.fc.in_features
-            self.model.fc = torch.nn.Linear(num_ftrs, self.num_classes)
+            model = self.network(self.config.model, pretrained=True)
+            num_ftrs = model.fc.in_features
+            model.fc = torch.nn.Linear(num_ftrs, self.num_classes)
             print(f'==> final layer channel is modified to {self.num_classes}')
         else:
-            self.model = self.network(self.config.model, self.num_classes)
+            model = self.network(self.config.model, num_classes=self.num_classes)
 
         # Define Optim
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.config.lr)
-
+        optimizer = torch.optim.Adam(model.parameters(), lr=self.config.lr)
+        self.model, self.optimizer = model, optimizer
         # Define Scheduler
-        self.schduler = torch.optim.lr_scheduler.MultiStepLR(self.optimizer, self.config.milestones, self.config.gamma)
+        # self.schduler = torch.optim.lr_scheduler.MultiStepLR(self.optimizer, self.config.milestones, self.config.gamma)
 
         # Define Loss
         self.criterion = torch.nn.CrossEntropyLoss()
@@ -61,7 +60,7 @@ class Trainer(object):
             self.model = torch.nn.DataParallel(self.model, device_ids=[self.config.gpu_ids])
         else:
             print('==> Cuda is not available. CPU Only')
-            self.model = torch.nn.DataParallel(self.model)
+            # self.model = torch.nn.DataParallel(self.model)
 
         # Define resume
         self.best_pred = .0
@@ -76,7 +75,6 @@ class Trainer(object):
             print(f'loaded checkpoint {self.config.resume} epoch {checkpoint["epoch"]}')
 
     def train(self, epoch):
-
         self.model.train()
         train_loss = .0
 
@@ -104,7 +102,7 @@ class Trainer(object):
         if self.config.tensorboard:
             self.writer.add_scalar('train/total_loss_epoch', train_loss, epoch)
 
-        self.schduler.step()
+        # self.schduler.step()
 
     def validation(self, epoch):
         self.model.eval()
@@ -125,6 +123,7 @@ class Trainer(object):
                 loss = self.criterion(output, target)
                 val_loss += loss.item()
                 tbar.set_description(f'Validation loss : {val_loss / (i + 1):.3f}')
+                print(output)
                 self.metric.update(output, target)
 
                 if self.config.tensorboard:
@@ -184,7 +183,8 @@ class Trainer(object):
         elif model == 'mobilenet-v2':
             model = mobilenet_v2(pretrained=pretrained, progress=True)
         elif model == 'efficientnet-b0':
-            model = EfficientNet.from_pretrained('efficientnet-b0', num_classes=num_classes)
+            # model = EfficientNet.from_pretrained('efficientnet-b0', num_classes=num_classes)
+            model = EfficientNet.from_name('efficientnet-b0', num_classes=num_classes)
         elif model == 'efficientnet-b1':
             model = EfficientNet.from_pretrained('efficientnet-b1', num_classes=num_classes)
         elif model == 'efficientnet-b2':
@@ -264,3 +264,4 @@ if __name__ == '__main__':
         # trainer.validation(epoch=epoch)
 
     trainer.writer.close()
+

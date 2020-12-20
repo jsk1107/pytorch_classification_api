@@ -5,19 +5,19 @@ gpu_ids: 0
 tensorboard: True
 
 # DataLoader config
-root_dir: D:/data/img
+root_dir: D:/data/dog_cat/
 inference_dir:
 val_size: 0.2
 label_map_path: ./dataloader/dataset/labelmap/cassava.name
 num_workers: 8
 pin_memory: True
 batch_size: 32
-resize: [224, 224] # [H, W]
+resize: [150, 150] # [H, W]
 start_epoch: 0
-epoch: 5
+epoch: 50
 
 # Model config
-model: resnet-18
+model: efficientnet-b0
 # [ inception-v3, vgg-19, resnet-18, resnet-50, resnet-101, resnet-152, resnext-50, resnext-101, efficientnet-b0 ~ b7]
 # optimize learning rate
 lr: 0.0001

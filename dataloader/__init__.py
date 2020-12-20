@@ -11,7 +11,7 @@ from torchvision.datasets import ImageFolder
 def get_dataloader(config):
 
     print('==> Create label_map & path')
-    classes = os.listdir(config.root_dir)
+    classes = os.listdir(os.path.join(config.root_dir, 'training_set/training_set'))
     label_map = {idx: label for idx, label in enumerate(classes)}
     num_classes = len(classes)
 
