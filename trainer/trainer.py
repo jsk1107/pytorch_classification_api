@@ -76,10 +76,6 @@ class Trainer(object):
             self.best_pred = checkpoint['best_pred']
             print(f'loaded checkpoint {self.config.resume} epoch {checkpoint["epoch"]}')
 
-    def fit(self, epoch):
-        self.train(epoch)
-        self.validation(epoch)
-
     def train(self, epoch):
         self.model.train()
         train_loss = .0
@@ -92,8 +88,6 @@ class Trainer(object):
 
                 if self.config.cuda:
                     img, target = img.cuda(), target.cuda()
-                # print(img, img.dtype)
-                print(target, target.dtype)
                 self.optimizer.zero_grad()
                 output = self.model(img)
                 loss = F.cross_entropy(output, target)
@@ -125,14 +119,11 @@ class Trainer(object):
 
                 if self.config.cuda:
                     img, target = img.cuda(), target.cuda()
-                print(img, img.dtype)
-                print(target, target.dtype)
                 with torch.no_grad():
                     output = self.model(img)
                 loss = F.cross_entropy(output, target)
                 val_loss += loss.item()
                 tbar.set_description(f'Validation loss : {val_loss / (i + 1):.3f}')
-                print(output)
                 self.metric.update(output, target)
 
                 if self.config.tensorboard:
@@ -192,8 +183,7 @@ class Trainer(object):
         elif model == 'mobilenet-v2':
             model = mobilenet_v2(pretrained=pretrained, progress=True)
         elif model == 'efficientnet-b0':
-            # model = EfficientNet.from_pretrained('efficientnet-b0', num_classes=num_classes)
-            model = EfficientNet.from_name('efficientnet-b0', num_classes=num_classes)
+            model = EfficientNet.from_pretrained('efficientnet-b0', num_classes=num_classes)
         elif model == 'efficientnet-b1':
             model = EfficientNet.from_pretrained('efficientnet-b1', num_classes=num_classes)
         elif model == 'efficientnet-b2':

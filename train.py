@@ -17,7 +17,8 @@ def run():
     print('Total Epoch: {}'.format(config.epoch))
 
     for epoch in range(config.start_epoch, config.epoch):
-        trainer.fit(epoch)
+        trainer.train(epoch)
+        trainer.validation(epoch)
 
     if config.tensorboard:
         trainer.writer.close()
