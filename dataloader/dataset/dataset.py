@@ -2,10 +2,8 @@ import os
 from torch.utils.data import Dataset
 from dataloader.utils import label_map
 import cv2
-from torchvision.datasets import ImageFolder
 
-
-class ClassificationLoader(ImageFolder):
+class ClassificationLoader(Dataset):
     def __init__(self, img_path, target, transforms=None):
         self.img_path = img_path
         self.target = target

@@ -4,7 +4,7 @@ import torch
 from PIL import Image
 import cv2
 import random
-
+from torchvision.transforms import transforms
 
 def transforms_train(config):
     composed_transform = Compose([Resize(config.resize),
@@ -32,7 +32,7 @@ class Compose(object):
 
 
 class Normalize(object):
-    def __init__(self, mean=(0.485, 0456., 0.406), std=(0.229, 0.224, 0.225)):
+    def __init__(self, mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)):
         self.mean = mean
         self.std = std
 

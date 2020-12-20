@@ -6,12 +6,12 @@ from dataloader.dataset import dataset
 from dataloader.custom_transform import transforms_train, transforms_val
 from torch.utils.data import DataLoader
 from torchvision.datasets import ImageFolder
-
+from torchvision.transforms import transforms
 
 def get_dataloader(config):
 
     print('==> Create label_map & path')
-    classes = os.listdir(os.path.join(config.root_dir, 'training_set/training_set'))
+    classes = os.listdir(config.root_dir)
     label_map = {idx: label for idx, label in enumerate(classes)}
     num_classes = len(classes)
 

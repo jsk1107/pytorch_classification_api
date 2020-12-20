@@ -5,7 +5,7 @@ gpu_ids: 0
 tensorboard: True
 
 # DataLoader config
-root_dir: D:/data/dog_cat/
+root_dir: D:/data/img/
 inference_dir:
 val_size: 0.2
 label_map_path: ./dataloader/dataset/labelmap/cassava.name

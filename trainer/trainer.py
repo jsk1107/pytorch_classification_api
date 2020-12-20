@@ -9,6 +9,7 @@ from tqdm import tqdm
 from dataloader.utils import label_map
 from efficientnet_pytorch import EfficientNet
 from torchvision.models import *
+import torch.nn.functional as F
 
 class Trainer(object):
     def __init__(self, config):
@@ -43,8 +44,9 @@ class Trainer(object):
         # Define Optim
         optimizer = torch.optim.Adam(model.parameters(), lr=self.config.lr)
         self.model, self.optimizer = model, optimizer
+
         # Define Scheduler
-        # self.schduler = torch.optim.lr_scheduler.MultiStepLR(self.optimizer, self.config.milestones, self.config.gamma)
+        self.schduler = torch.optim.lr_scheduler.MultiStepLR(self.optimizer, self.config.milestones, self.config.gamma)
 
         # Define Loss
         self.criterion = torch.nn.CrossEntropyLoss()
@@ -74,6 +76,10 @@ class Trainer(object):
             self.best_pred = checkpoint['best_pred']
             print(f'loaded checkpoint {self.config.resume} epoch {checkpoint["epoch"]}')
 
+    def fit(self, epoch):
+        self.train(epoch)
+        self.validation(epoch)
+
     def train(self, epoch):
         self.model.train()
         train_loss = .0
@@ -86,10 +92,12 @@ class Trainer(object):
 
                 if self.config.cuda:
                     img, target = img.cuda(), target.cuda()
-
+                # print(img, img.dtype)
+                print(target, target.dtype)
                 self.optimizer.zero_grad()
                 output = self.model(img)
-                loss = self.criterion(output, target)
+                loss = F.cross_entropy(output, target)
+
                 loss.backward()
                 self.optimizer.step()
                 train_loss += loss.item()
@@ -102,7 +110,7 @@ class Trainer(object):
         if self.config.tensorboard:
             self.writer.add_scalar('train/total_loss_epoch', train_loss, epoch)
 
-        # self.schduler.step()
+        self.schduler.step()
 
     def validation(self, epoch):
         self.model.eval()
@@ -117,10 +125,11 @@ class Trainer(object):
 
                 if self.config.cuda:
                     img, target = img.cuda(), target.cuda()
-
+                print(img, img.dtype)
+                print(target, target.dtype)
                 with torch.no_grad():
                     output = self.model(img)
-                loss = self.criterion(output, target)
+                loss = F.cross_entropy(output, target)
                 val_loss += loss.item()
                 tbar.set_description(f'Validation loss : {val_loss / (i + 1):.3f}')
                 print(output)
