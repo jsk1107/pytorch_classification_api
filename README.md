@@ -191,7 +191,7 @@ python inferece.py --img-dir ./demo \
 - [x] 추론부 작성하기 
 - [ ] 가이드라인 영상 찍기
 - [ ] Colab 실행 환경 가이드라인 제공
-
+- [ ] Docker 실행 방법 가이드라인 작성
 ---
 
 ## Reference
