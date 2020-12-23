@@ -4,11 +4,11 @@ from log.saver import Saver
 from log.summarise import TensorboardSummary
 from log.logger import get_logger
 from dataloader import get_dataloader
-from model.metric import MetricTracker, accuracy
+from model.metric import MetricTracker
 from tqdm import tqdm
-from dataloader.utils import label_map
-from efficientnet_pytorch import EfficientNet
-from torchvision.models import *
+from model import network
+
+
 import torch.nn.functional as F
 
 class Trainer(object):
@@ -34,12 +34,12 @@ class Trainer(object):
 
         if network_name != 'efficientnet':
             print(f'==> Load pretrained weight.')
-            model = self.network(self.config.model, pretrained=True)
+            model = network(self.config.model, pretrained=True)
             num_ftrs = model.fc.in_features
             model.fc = torch.nn.Linear(num_ftrs, self.num_classes)
             print(f'==> final layer channel is modified to {self.num_classes}')
         else:
-            model = self.network(self.config.model, num_classes=self.num_classes)
+            model = network(self.config.model, num_classes=self.num_classes)
 
         # Define Optim
         optimizer = torch.optim.Adam(model.parameters(), lr=self.config.lr)
@@ -74,6 +74,9 @@ class Trainer(object):
             self.model.load_state_dict(checkpoint['state_dict'])
             self.optimizer.load_state_dict(checkpoint['optimizer'])
             self.best_pred = checkpoint['best_pred']
+            # TODO: 다른 모델을 불러왔을때 raise error 발생
+            self.config.model = checkpoint['network']
+            self.label_map = checkpoint['label_map']
             print(f'loaded checkpoint {self.config.resume} epoch {checkpoint["epoch"]}')
 
     def train(self, epoch):
@@ -154,54 +157,13 @@ class Trainer(object):
             state = {'best_pred': TOTAL_ACC,
                      'epoch': epoch + 1,
                      'state_dict': self.model.state_dict(),
-                     'optimizer': self.optimizer.state_dict()}
+                     'optimizer': self.optimizer.state_dict(),
+                     'network': self.config.model,
+                     'label_map': self.label_map}
             self.saver.save_checkpoint(state, is_best)
 
 
-    def network(self, model, pretrained=True, num_classes=None):
 
-        if model == 'resnet-18':
-            model = resnet18(pretrained=pretrained, progress=True)
-        elif model == 'resnet-34':
-            model = resnet34(pretrained=pretrained, progress=True)
-        elif model == 'resnet-50':
-            model = resnet50(pretrained=pretrained, progress=True)
-        elif model == 'resnet-101':
-            model = resnet101(pretrained=pretrained, progress=True)
-        elif model == 'resnet-152':
-            model = resnet152(pretrained=pretrained, progress=True)
-        elif model == 'resnext-50':
-            model = resnext50_32x4d(pretrained=pretrained, progress=True)
-        elif model == 'resnext-101':
-            model = resnext101_32x8d(pretrained=pretrained, progress=True)
-        elif model == 'vgg-19':
-            model = vgg19(pretrained=pretrained, progress=True)
-        elif model == 'inception-v3':
-            model = inception_v3(pretrained=pretrained, progress=True)
-        elif model == 'mobilenet-v2':
-            model = mobilenet_v2(pretrained=pretrained, progress=True)
-        elif model == 'mobilenet-v2':
-            model = mobilenet_v2(pretrained=pretrained, progress=True)
-        elif model == 'efficientnet-b0':
-            model = EfficientNet.from_pretrained('efficientnet-b0', num_classes=num_classes)
-        elif model == 'efficientnet-b1':
-            model = EfficientNet.from_pretrained('efficientnet-b1', num_classes=num_classes)
-        elif model == 'efficientnet-b2':
-            model = EfficientNet.from_pretrained('efficientnet-b2', num_classes=num_classes)
-        elif model == 'efficientnet-b3':
-            model = EfficientNet.from_pretrained('efficientnet-b3', num_classes=num_classes)
-        elif model == 'efficientnet-b4':
-            model = EfficientNet.from_pretrained('efficientnet-b4', num_classes=num_classes)
-        elif model == 'efficientnet-b5':
-            model = EfficientNet.from_pretrained('efficientnet-b5', num_classes=num_classes)
-        elif model == 'efficientnet-b6':
-            model = EfficientNet.from_pretrained('efficientnet-b6', num_classes=num_classes)
-        elif model == 'efficientnet-b7':
-            model = EfficientNet.from_pretrained('efficientnet-b7', num_classes=num_classes)
-        else:
-            raise ImportError(f'=========> It is not found the {model}')
-
-        return model
 
 if __name__ == '__main__':
     """Unit Test"""

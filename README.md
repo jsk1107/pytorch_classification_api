@@ -140,3 +140,5 @@ EPOCH : 0 | Train loss : 0.696:   9%|▉         | 1/11 [00:18<03:07, 18.75s/it]
 
 - `best_pred.txt`는 학습이 진행되면서 가장 성능이 좋은 모델의 F1_Score를 나타냅니다. 
 
+- `model_best.pth.tar`는 학습이 진행되면서 F1_Score가 가장 높은 모델파일입니다.
+
