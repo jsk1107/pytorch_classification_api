@@ -11,7 +11,6 @@ Pytorch를 활용한 Classification API를 제작하였습니다. config파일�
 - Inception-v3
 - VGG-19
 
----
 
 ## Install
 
@@ -35,7 +34,6 @@ pip install tqdm
 pip install efficientnet_pytorch
 ```
 
----
 ## How to use
 
 ### 1. Set folder structure
@@ -159,7 +157,6 @@ dogs     0    40
 
 행(row)는 True이고, 열(col)은 Pred 입니다. 매 Epoch마다 기록되기 때문에 모델의 성능을 볼때 아주 유용하게 사용하실 수 있습니다.
 
----
 
 ### 4. Inference
 
@@ -189,7 +186,16 @@ python inferece.py --img-dir ./demo \
 
 ---
 
+# TODO
+
+- [x] 추론부 작성하기 
+- [ ] 가이드라인 영상 찍기
+- [ ] Colab 실행 환경 가이드라인 제공
+
+---
+
 ## Reference
 
 - [victoresque/pytorch-template](https://github.com/victoresque/pytorch-template)
 - [pytorch/torchvision](https://github.com/pytorch/vision/tree/master/torchvision/models)
+
