@@ -107,7 +107,7 @@ EPOCH : 0 | Train loss : 0.696:   9%|▉         | 1/11 [00:18<03:07, 18.75s/it]
   |         |        |-- model_best.pth.tar
  
   
- Ex. Project_name: test / model: efficientnet-b0 / 실행횟수: 2번 
+Ex. Project_name: test / model: efficientnet-b0 / 실행횟수: 2번 
 /run/
   | --- test
   |       |-- efficientnet-b0
@@ -142,3 +142,54 @@ EPOCH : 0 | Train loss : 0.696:   9%|▉         | 1/11 [00:18<03:07, 18.75s/it]
 
 - `model_best.pth.tar`는 학습이 진행되면서 F1_Score가 가장 높은 모델파일입니다.
 
+#### Confusion Matrix
+
+`loging.log`파일을 열어보면 아래와 같이 혼동행렬이 기록되어 있습니다.
+
+```text
+2020-12-23 08:27:13,972, Epoch: 0 || Cunfusion Metric: Row is True, Col is Pred. 
+       cats  dogs
+cats    39     1
+dogs     0    40
+2020-12-23 08:27:13,978, TOTAL_ACC : 98.750 %
+.
+.
+.
+```
+
+행(row)는 True이고, 열(col)은 Pred 입니다. 매 Epoch마다 기록되기 때문에 모델의 성능을 볼때 아주 유용하게 사용하실 수 있습니다.
+
+---
+
+### 4. Inference
+
+추론의 메인부는 `inferenc.py`입니다. 따로 환경설정파일을 만들지 않고 Commend Line에서 직접 인자를 입력하는 형태입니다.
+학습과 마찬가지로 IDE 도구를 활용할 경우 `parser.add_argment()` 부분을 수정하시면 됩니다.
+
+```shell
+python inferece.py --img-dir {Dir inferece_img} \
+                   --save-dir {Dir save_img} \
+                   --model-path {checkpoint path} \
+                   --batch-size {batch size to be used for inference} \
+                   --resize {Img size. Sequance is H, W}
+                   
+Ex.
+python inferece.py --img-dir ./demo \
+                   --save-dir ./output \
+                   --model-path ./run/test/efficientnet-bo/model_best.pth.tar \
+                   --batch-size 4 \
+                   --resize 224 224
+```
+
+단일이미지를 추론하고 싶다면 `batch_size`를 1로 주시면 됩니다.
+또한, 이미지 사이즈는 학습에 사용했을때 resize했던 크기와 동일하게 맞추는것을 권장합니다.
+
+추론된 이미지는 `save_dir` 경로 하위에 예측된 클래스명으로 폴더가 생성되며, 그 하위에 저장이 되는 형태로 구성되어있습니다.
+저장된 이미지명은 구분자('_')로 구분되며 구분자 앞쪽은 count를 나타내고, 뒷쪽은 확률값을 뜻합니다.
+
+---
+
+## Reference
+
+- [victoresque/pytorch-template](https://github.com/victoresque/pytorch-template)
+- [pytorch/torchvision](https://github.com/pytorch/vision/tree/master/torchvision/models)

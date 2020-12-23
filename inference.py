@@ -61,8 +61,10 @@ class Inferencer(object):
             with torch.no_grad():
                 output = self.model(img)
 
+            output = torch.nn.functional.softmax(output)
             output = output.cpu().numpy()
             category_idx = np.argmax(output, axis=1)
+            prob = np.max(output, axis=1)
 
             # batch로 들어온 이미지들의 추론된 label명 담기
             label = []
@@ -71,9 +73,9 @@ class Inferencer(object):
             img_path = sample['img_path']
 
             # save img. img_path, label의 인덱스 순서는 매칭되어있는 상태임.
-            self.save_img(img_path, label)
+            self.save_img(img_path, label, prob)
 
-    def save_img(self, img_paths, label):
+    def save_img(self, img_paths, label, prob):
 
         if not os.path.isdir(self.args.save_dir):
             os.makedirs(self.args.save_dir, exist_ok=True)
@@ -85,7 +87,7 @@ class Inferencer(object):
                 os.makedirs(label_dir, exist_ok=True)
 
             cnt = len([f for f in os.scandir(label_dir)])
-            img_name = os.path.join(label_dir, str(cnt+1).zfill(4) + '.jpg')
+            img_name = os.path.join(label_dir, str(cnt+1).zfill(4) + f'_{round(prob[i]*100)}.jpg')
             cv2.imwrite(img_name, img)
             print(f'Save!! ===========> {img_name}')
 
@@ -97,9 +99,10 @@ if __name__ == '__main__':
     parser.add_argument('--save-dir', type=str, default='./output', help='Path of the file to be saved')
     parser.add_argument('--model-path', '-m', type=str, default='./run/test/efficientnet-b0/model_best.pth.tar', help='img dir for inference')
     parser.add_argument('--batch_size', type=int, default=1, help='The batch_size to be used for inference. If you want to infer a single image, enter 1.')
-    parser.add_argument('--resize', type=int, default=[224, 224], help='Image size [H, W] to be adjusted. It is recommended to match the input image size used in training.')
+    parser.add_argument('--resize', nargs='+', action='store', dest='resize', default=[224, 224],
+                        help='Image size [H, W] to be adjusted. It is recommended to match the input image size used in training.')
 
     args = parser.parse_args()
-
+    print(args)
     inferencer = Inferencer(args)
     inferencer.inference()
